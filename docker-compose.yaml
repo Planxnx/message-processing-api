@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  producer:
+    image: node:12.18.3-alpine
+    volumes:
+      - ./producer-service:/producer-service
+    working_dir: /producer-service
+    command: "npm start"
+    depends_on:
+      - rabbitmq
+    ports:
+      - 4000:4000
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    tty: true
+    # volumes:
+    #   - ./volumes/rabbitmq/etc/:/etc/rabbitmq/
+    #   - ./volumes/rabbitmq/data/:/var/lib/rabbitmq/
+    #   - ./volumes/rabbitmq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "admin"
+    ports:
+      - 5672:5672
+      - 15672:15672
