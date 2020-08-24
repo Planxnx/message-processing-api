@@ -1,20 +1,29 @@
-import { createRabbitMQChannel } from "./connections/rabbitmq";
+import kafka from "./connections/kafka";
+const kafkaClient = kafka();
+const consumerGroup1 = kafkaClient.consumer({ groupId: "group1" });
 
-createRabbitMQChannel().then((mqchannel) => {
-  mqchannel.consume(
-    "NEW_MESSAGE",
-    (msg) => {
-      const logsMessage = JSON.stringify({
+consumerGroup1.connect().then(async () => {
+  await consumerGroup1.subscribe({
+    topic: "message.new",
+    fromBeginning: false,
+  });
+  await consumerGroup1.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      const logMessage = JSON.stringify({
         status: "RECEIVED MESSAGE",
         data: {
-          topic: msg.fields.routingKey,
-          message: msg.content,
+          topic,
+          partition,
+          offset: message.offset,
+          message: message.value.toString(),
+          time: message.timestamp,
         },
       });
-      console.log(logsMessage);
+      console.log(logMessage);
     },
-    { noAck: false }
-  );
+  });
+}).catch(err=>{
+  console.log(`ERR: ConsumerGroup1Conenct: ${err}`)
 });
 
-console.log(`consumer service started - rabbitmq`);
+console.log(`consumer service started - kafka`);

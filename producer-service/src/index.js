@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { createRabbitMQChannel } from "./connections/rabbitmq";
+import kafka from "./connections/kafka";
+const kafkaClient = kafka();
 
 const app = express();
 
@@ -14,12 +15,16 @@ app.get("/", (req, res) => {
 app.post("/message", async (req, res) => {
   try {
     const { message, topic } = req.body;
-    const mqchannel = await createRabbitMQChannel();
-    await mqchannel.assertQueue(topic || "TEST_TOPIC");
-    mqchannel.sendToQueue(
-      topic || "TEST_TOPIC",
-      Buffer.from(message || "TEST_MESSAGE")
-    );
+    const producer = kafkaClient.producer();
+    await producer.connect();
+    await producer.send({
+      topic: topic || "TEST_TOPIC",
+      messages: [
+        {
+          value: message || "TEST_MESSAGE",
+        },
+      ],
+    });
     res.status(200).send({
       status: 200,
       message: "produce success",
@@ -32,15 +37,11 @@ app.post("/message", async (req, res) => {
     res.status(400).send({
       status: 400,
       message: `produce failed: ${error}`,
-      data: {
-        topic,
-        message,
-      },
     });
   }
 });
 
-const port = process.env.MOCK_SERVER_PORT || 8888;
+const port = process.env.SERVER_PORT || 8080;
 app.listen(port, () => {
   console.log(`producer service started - ${port}`);
 });
