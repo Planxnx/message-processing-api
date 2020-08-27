@@ -12,6 +12,20 @@ app.get("/", (req, res) => {
   res.status(200).send({ status: 200, message: "ok" });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send({ status: 200, message: "ok" });
+});
+
+app.get("/kafka-health", async (req, res) => {
+  try {
+    const kafkaAdmin = kafkaClient.admin();
+    await kafkaAdmin.connect();
+    res.status(200).send({ status: 200, message: "kafka ok" });
+  } catch (error) {
+    res.status(500).send({ status: 500, message: error }); 
+  }
+});
+
 app.post("/message", async (req, res) => {
   try {
     const { message, topic } = req.body;
