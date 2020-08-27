@@ -1,2 +1,2 @@
-# chatbot-system
-chatbot system with event-driven architecture
+# message processing api
+message processing system and open api with event-driven architecture 
