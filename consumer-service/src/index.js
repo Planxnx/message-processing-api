@@ -26,4 +26,4 @@ consumerGroup1.connect().then(async () => {
   console.log(`ERR: ConsumerGroup1Conenct: ${err}`)
 });
 
-console.log(`consumer service started - kafka`);
+console.log(`${process.env.SERVICE_NAME} service started - kafka`);

@@ -1,7 +1,7 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: message-processing-api
+  name: api-gateway-deployment
   namespace: planxnx
   labels:
     app: myapp
@@ -9,15 +9,15 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: api
+      app: api-gateway
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: api
+        app: api-gateway
     spec:
       containers:
-        - name: api-gateway
+        - name: gateway
           image: planxthanee/message-processing-api-apigateway:test
           ports:
             - containerPort: 4000
@@ -28,4 +28,4 @@ spec:
             - name: SERVICE_PORT
               value: "4000"
             - name: KAFKA_HOST
-              value: kafka-service.planxnx:9092 #kafka-service
+              value: message-queue-service.planxnx:9092 #kafka-service

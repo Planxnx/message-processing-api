@@ -1,15 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-service
+  name: message-queue-service
   namespace: planxnx
   uid: 96912540-ca9d-4be2-abf0-2d32b3de79d1
   labels:
     app: service
 spec:
   ports:
-    - protocol: TCP
+    - name: kafka-port
+      protocol: TCP
       port: 9092
       targetPort: 9092
+    - name: zookeeper-port
+      protocol: TCP
+      port: 2181
+      targetPort: 2181
   selector:
-    app: messagequeue
+    app: message-queue
