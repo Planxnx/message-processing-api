@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import kafka from "./connections/kafka";
-const kafkaClient = kafka();
+const kafkaClient = kafka(process.env.KAFKA_HOST);
 
 const app = express();
 
@@ -25,6 +25,7 @@ app.post("/message", async (req, res) => {
         },
       ],
     });
+    console.log(`${process.env.SERVICE_NAME}: SENT`);
     res.status(200).send({
       status: 200,
       message: "produce success",
@@ -41,7 +42,7 @@ app.post("/message", async (req, res) => {
   }
 });
 
-const port = process.env.SERVER_PORT || 8080;
+const port = process.env.SERVICE_PORT || 8080;
 app.listen(port, () => {
-  console.log(`producer service started - ${port}`);
+  console.log(`${process.env.SERVICE_NAME} service started - ${port}`);
 });

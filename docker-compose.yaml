@@ -2,13 +2,10 @@ version: '3'
 
 services:
   producer:
-    image: node:12.18.3-alpine
-    volumes:
-      - ./producer-service:/producer-service
-    working_dir: /producer-service
-    command: "npm start"
+    build: ./producer-service
     environment:
-      SERVER_PORT: '4000'
+      SERVICE_NAME: 'PRODUCER'
+      SERVICE_PORT: '4000'
       KAFKA_HOST: 'kafka1:19092'
     depends_on:
       - zoo
