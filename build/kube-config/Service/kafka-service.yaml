@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: planxnx
+  uid: 96912540-ca9d-4be2-abf0-2d32b3de79d1
+  labels:
+    app: service
+spec:
+  ports:
+    - protocol: TCP
+      port: 9092
+      targetPort: 9092
+  selector:
+    app: messagequeue

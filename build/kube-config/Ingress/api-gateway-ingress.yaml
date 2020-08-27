@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: message-processing-api
+  labels:
+    app: myapp
+  uid: 16548244-461b-49d4-899b-5e41bab9ccca
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+    - host: message-processing-api.planxnx.usw1.kubesail.org
+      http:
+        paths:
+          - backend:
+              serviceName: message-processing-api
+              servicePort: 4000
+  tls:
+    - hosts:
+        - message-processing-api.planxnx.usw1.kubesail.org
+      secretName: message-processing-api-ingress

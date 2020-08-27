@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: message-processing-api
+  namespace: planxnx
+  uid: 66636bad-b394-4caf-8743-7ac6055e5bfe
+  labels:
+    app: myapp
+spec:
+  ports:
+    - protocol: TCP
+      port: 4000
+      targetPort: 4000
+  selector:
+    app: api
