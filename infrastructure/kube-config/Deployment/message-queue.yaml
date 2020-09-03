@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message-queue-deployment
+  namespace: planxnx
+  labels:
+    app: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: message-queue
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: message-queue
+    spec:
+      containers:
+        - name: kafka
+          image: wurstmeister/kafka:2.12-2.5.0
+          ports:
+            - containerPort: 9092
+              protocol: TCP
+          env:
+            - name: KAFKA_ADVERTISED_PORT
+              value: "9092"
+            - name: KAFKA_ADVERTISED_HOST_NAME
+              value: message-queue-service.planxnx #kafka-service
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: message-queue-service.planxnx:2181 #zookeeper-service
+            - name: KAFKA_CREATE_TOPICS
+              value: message.test:1:1,message.new:1:1,message.reply:1:1 # topic:partition:replica
+            - name: KAFKA_BROKER_ID
+              value: "1"
+        - name: zookeeper
+          image: zookeeper:3.4.9
+          ports:
+            - containerPort: 2181
+              protocol: TCP
+          env:
+            - name: ZOO_MY_ID
+              value: "1"
+            - name: ZOO_PORT
+              value: "2181"
+            - name: ZOO_SERVERS
+              value: server.1=zookeeper:2888:3888

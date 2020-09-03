@@ -1,0 +1,26 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: consumer-deployment
+  namespace: planxnx
+  labels:
+    app: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: consumer
+    spec:
+      containers:
+        - name: consumer
+          image: planxthanee/message-processing-api-consumer:poc
+          env:
+            - name: SERVICE_NAME
+              value: Consumer
+            - name: KAFKA_HOST
+              value: message-queue-service.planxnx:9092 #kafka-service
