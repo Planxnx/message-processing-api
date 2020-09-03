@@ -8,8 +8,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get("/", (req, res) => {
+app.post("/", (req, res) => {
   console.log(`${process.env.SERVICE_NAME}: health ok`);
+  console.log(`received:  ${JSON.stringify(req.body)}`)
   res.status(200).send({ status: 200, message: "ok" });
 });
 
