@@ -48,6 +48,16 @@ services:
       - zoo
     networks:
       - local
+  mongodb:
+    image: mongo:4.4.0-bionic
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - 27017:27017
+    volumes:
+      - ./volumes/mongodb:/data/db
+
       
 networks:
   local:
