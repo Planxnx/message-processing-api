@@ -6,17 +6,17 @@ import (
 	"os/signal"
 
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/connection"
+	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/cron"
 	scheduleRepository "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/repository"
-	scheduleUsecase "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/usecase"
 )
 
 func main() {
 	connection := connection.InitializeConnection()
 
 	scheduleRepo := scheduleRepository.NewScheduleRepository(connection.MessageProcssingAPIDatabase.Collection("workSchedule"))
-	scheduleUsecase := scheduleUsecase.NewScheduleUsecase(scheduleRepo)
+	scheduleCron := cron.NewScheduleUsecase(scheduleRepo)
 
-	go scheduleUsecase.StartFetchSchedule()
+	go scheduleCron.StartFetchSchedule()
 
 	log.Println("Start Scheduler-service...")
 
