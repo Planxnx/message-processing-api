@@ -59,7 +59,7 @@ func dailyWorkCommand(schR *repository.ScheduleRepository) func() {
 		if workSch == nil {
 			return
 		}
-
+		log.Printf("Found! %v", workSch)
 		//TODO Publish works to Kafka
 	}
 }
