@@ -1,4 +1,14 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/Planxnx/message-processing-api v0.0.0-20200827065140-a5756e7a608f h1:AUZRBHMSBnbOFnKlXlTE2AKahKDxs6F/STlquUJ+nJo=
+github.com/Planxnx/message-processing-api v0.0.0-20200905172450-4434ca3ebdfb h1:vzcLs1KI+J3ksuOjZZI8xtBlgnLgZk+NEmofQ4aoZ/Y=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905172450-4434ca3ebdfb h1:T4r7ERSb+Lh1Hfp7Jk1gdRb/F1eQi0Wy6FPhQqfi4kU=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905172450-4434ca3ebdfb/go.mod h1:Y7TE2zaY3m7ukhdAArdxT7fTe7BADURBP7rqD48cvYQ=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905174816-443ea9b308fa h1:ui/h2XP40nhlLRG1IVUjspjiF29Ygjc3JbmTeitV6/Y=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905174816-443ea9b308fa/go.mod h1:fYzUm17c9b0W8B+PCEyCFvPR674VRy25LtHI+9xefX4=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905182128-807051df85f8 h1:zBrV7odgOkp7quf1JVQZ3ztoByFaGafuEMI8r+mI5cE=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905182128-807051df85f8/go.mod h1:fYzUm17c9b0W8B+PCEyCFvPR674VRy25LtHI+9xefX4=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905183250-875b708d112f h1:5C+2Goi+5YCWk5aAoSogElw3/m42RdzavVfqYHdBE4Y=
+github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200905183250-875b708d112f/go.mod h1:fYzUm17c9b0W8B+PCEyCFvPR674VRy25LtHI+9xefX4=
 github.com/aws/aws-sdk-go v1.29.15 h1:0ms/213murpsujhsnxnNKNeVouW60aJqSd992Ks3mxs=
 github.com/aws/aws-sdk-go v1.29.15/go.mod h1:1KvfttTE3SPKMpo8g2c6jL3ZKfXtFvKscTgahTma5Xg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -57,6 +67,12 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/qiniu/qmgo v0.7.0 h1:ocxDo15+07nqatN2VvxDTuUST8FG8RO2vjvN1iQg1jo=
 github.com/qiniu/qmgo v0.7.0/go.mod h1://ayObGhw5dZG4dlGF4XWqpjkAcRDkIqs1p3Io5LYkI=
+github.com/robfig/cron v1.2.0 h1:ZjScXvvxeQ63Dbyxy76Fj3AT3Ut0aKsyd2/tl3DTMuQ=
+github.com/robfig/cron v1.2.0/go.mod h1:JGuDeoQd7Z6yL4zQhZ3OPEVHB7fL6Ka6skscFHfmt2k=
+github.com/robfig/cron/v3 v3.0.0 h1:kQ6Cb7aHOHTSzNVNEhmp8EcWKLb4CbiMW9h9VyIhO4E=
+github.com/robfig/cron/v3 v3.0.0/go.mod h1:eQICP3HwyT7UooqI/z+Ov+PtYAWygg1TEWWzGIFLtro=
+github.com/robfig/cron/v3 v3.0.1 h1:WdRxkvbJztn8LMz/QEvLN5sBU+xKpSqwwUO1Pjr4qDs=
+github.com/robfig/cron/v3 v3.0.1/go.mod h1:eQICP3HwyT7UooqI/z+Ov+PtYAWygg1TEWWzGIFLtro=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.2.2/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
