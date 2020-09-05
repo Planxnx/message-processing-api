@@ -27,11 +27,11 @@ func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *ScheduleUsecase
 		CronCommands: []CronCommand{
 			{
 				CommandFunction: dailyWorkCommand(schRepo),
-				TimeSpec:        "@every 1s",
+				TimeSpec:        "@every 1m",
 			},
 			{
 				CommandFunction: everyHourWorkCommand(schRepo),
-				TimeSpec:        "@every 1s",
+				TimeSpec:        "@every 1m",
 			},
 		},
 	}
