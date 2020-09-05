@@ -9,28 +9,76 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type CronCommand struct {
+	CommandFunction func()
+	TimeSpec        string
+}
+
 type ScheduleUsecase struct {
 	ScheduleRepository *repository.ScheduleRepository
-	Command            func()
 	Cron               *cron.Cron
-	CronSpec           string
+	CronCommands       []CronCommand
 }
 
 func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *ScheduleUsecase {
 	return &ScheduleUsecase{
 		ScheduleRepository: schRepo,
 		Cron:               cron.New(),
-		CronSpec:           "@every 10s",
+		CronCommands: []CronCommand{
+			{
+				CommandFunction: dailyWorkCommand(schRepo),
+				TimeSpec:        "@every 1s",
+			},
+			{
+				CommandFunction: everyHourWorkCommand(schRepo),
+				TimeSpec:        "@every 1s",
+			},
+		},
 	}
 }
 
 func (sch *ScheduleUsecase) StartFetchSchedule() {
-	sch.Cron.AddFunc(sch.CronSpec, func() {
-		log.Println("Fetching Schedule!")
-		ctx := context.Background()
-		workSch, _ := sch.ScheduleRepository.GetDailySchedule(ctx)
-		log.Println(workSch)
-	})
+	for _, cronCmd := range sch.CronCommands {
+		sch.Cron.AddFunc(cronCmd.TimeSpec, cronCmd.CommandFunction)
+	}
 	sch.Cron.Start()
-	log.Println("Start fetch schedule")
+	log.Println("Start Fetch schedule")
+}
+
+func dailyWorkCommand(schR *repository.ScheduleRepository) func() {
+	log.Println("Initial DailyWorkCommand schedule")
+	return func() {
+		ctx := context.Background()
+
+		log.Println("Start daily work schedule!")
+		workSch, err := schR.GetDailySchedule(ctx)
+		if err != nil {
+			log.Println("dailyWorkCommand Error: failed on get daily schedule: " + err.Error())
+			return
+		}
+		if workSch == nil {
+			return
+		}
+
+		//TODO Publish works to Kafka
+	}
+}
+
+func everyHourWorkCommand(schR *repository.ScheduleRepository) func() {
+	log.Println("Initial EveryHourWorkCommand schedule")
+	return func() {
+		ctx := context.Background()
+
+		log.Println("Start everyhour work schedule!")
+		workSch, err := schR.GetEveryHourSchedule(ctx)
+		if err != nil {
+			log.Println("everyHourWorkCommand Error: failed on get hour schedule: " + err.Error())
+			return
+		}
+		if workSch == nil {
+			return
+		}
+
+		//TODO Publish works to Kafka
+	}
 }
