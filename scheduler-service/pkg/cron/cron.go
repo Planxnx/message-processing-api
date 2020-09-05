@@ -14,14 +14,14 @@ type CronCommand struct {
 	TimeSpec        string
 }
 
-type ScheduleUsecase struct {
+type CronUsecase struct {
 	ScheduleRepository *repository.ScheduleRepository
 	Cron               *cron.Cron
 	CronCommands       []CronCommand
 }
 
-func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *ScheduleUsecase {
-	return &ScheduleUsecase{
+func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *CronUsecase {
+	return &CronUsecase{
 		ScheduleRepository: schRepo,
 		Cron:               cron.New(),
 		CronCommands: []CronCommand{
@@ -37,7 +37,7 @@ func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *ScheduleUsecase
 	}
 }
 
-func (sch *ScheduleUsecase) StartFetchSchedule() {
+func (sch *CronUsecase) StartFetchSchedule() {
 	for _, cronCmd := range sch.CronCommands {
 		sch.Cron.AddFunc(cronCmd.TimeSpec, cronCmd.CommandFunction)
 	}
