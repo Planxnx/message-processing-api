@@ -6,13 +6,18 @@ import (
 	"os/signal"
 
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/connection"
-	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule"
+	scheduleRepository "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/repository"
+	scheduleUsecase "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/usecase"
 )
 
 func main() {
 	connection := connection.InitializeConnection()
-	scheduler := schedule.InitializeSchedule(connection)
-	go scheduler.StartSchedule()
+
+	scheduleRepo := scheduleRepository.NewScheduleRepository(connection.MessageProcssingAPIDatabase.Collection("workSchedule"))
+	scheduleUsecase := scheduleUsecase.NewScheduleUsecase(scheduleRepo)
+
+	go scheduleUsecase.StartFetchSchedule()
+
 	log.Println("Start Scheduler-service...")
 
 	killSignal := make(chan os.Signal, 1)

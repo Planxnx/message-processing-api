@@ -8,8 +8,8 @@ import (
 )
 
 type Connections struct {
-	MockCon       *Mock
-	MongoDBClient *qmgo.Client
+	MongoDBClient               *qmgo.Client
+	MessageProcssingAPIDatabase *qmgo.Database
 }
 
 func InitializeConnection() *Connections {
@@ -22,7 +22,7 @@ func InitializeConnection() *Connections {
 	}
 
 	return &Connections{
-		MockCon:       InitializeMock(),
-		MongoDBClient: mongodbclient,
+		MongoDBClient:               mongodbclient,
+		MessageProcssingAPIDatabase: mongodbclient.Database("message-processing-api"),
 	}
 }
