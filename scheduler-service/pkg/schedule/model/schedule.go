@@ -12,7 +12,7 @@ type WorkSchedule struct {
 	Time          WorkTime  `bson:"time"`
 	Type          string    `bson:"type"` //Daily, Hourly
 	CreateAt      time.Time `bson:"createdAt"`
-	DeletedAt     time.Time `bson:"deleted"`
+	DeletedAt     time.Time `bson:"deletedAt"`
 }
 
 type WorkTime struct {

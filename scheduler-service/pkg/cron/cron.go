@@ -35,7 +35,7 @@ func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *CronUsecase {
 			},
 			{
 				CommandFunction: weeklyWorkCommand(schRepo),
-				TimeSpec:        "@every 10s",
+				TimeSpec:        "@every 1m",
 			},
 		},
 	}
@@ -63,7 +63,7 @@ func dailyWorkCommand(schR *repository.ScheduleRepository) func() {
 		if workSch == nil {
 			return
 		}
-		log.Printf("Found! %v", workSch)
+		log.Printf("Daily Found! %v", workSch)
 		//TODO Publish works to Kafka
 	}
 }
@@ -82,7 +82,7 @@ func hourlyWorkCommand(schR *repository.ScheduleRepository) func() {
 		if workSch == nil {
 			return
 		}
-
+		log.Printf("Hourly Found! %v", workSch)
 		//TODO Publish works to Kafka
 	}
 }
@@ -101,7 +101,7 @@ func weeklyWorkCommand(schR *repository.ScheduleRepository) func() {
 		if workSch == nil {
 			return
 		}
-		log.Println(workSch)
+		log.Printf("Weekly Found: %v", workSch)
 		//TODO Publish works to Kafka
 	}
 }
