@@ -30,8 +30,12 @@ func NewScheduleUsecase(schRepo *repository.ScheduleRepository) *CronUsecase {
 				TimeSpec:        "@every 1m",
 			},
 			{
-				CommandFunction: everyHourWorkCommand(schRepo),
+				CommandFunction: hourlyWorkCommand(schRepo),
 				TimeSpec:        "@every 1m",
+			},
+			{
+				CommandFunction: weeklyWorkCommand(schRepo),
+				TimeSpec:        "@every 10s",
 			},
 		},
 	}
@@ -64,21 +68,40 @@ func dailyWorkCommand(schR *repository.ScheduleRepository) func() {
 	}
 }
 
-func everyHourWorkCommand(schR *repository.ScheduleRepository) func() {
-	log.Println("Initial EveryHourWorkCommand schedule")
+func hourlyWorkCommand(schR *repository.ScheduleRepository) func() {
+	log.Println("Initial HourlyWorkCommand schedule")
 	return func() {
 		ctx := context.Background()
 
-		log.Println("Start everyhour work schedule!")
-		workSch, err := schR.GetEveryHourSchedule(ctx)
+		log.Println("Start houry work schedule!")
+		workSch, err := schR.GetHOURLYSchedule(ctx)
 		if err != nil {
-			log.Println("everyHourWorkCommand Error: failed on get hour schedule: " + err.Error())
+			log.Println("hourlyWorkCommand Error: failed on get hour schedule: " + err.Error())
 			return
 		}
 		if workSch == nil {
 			return
 		}
 
+		//TODO Publish works to Kafka
+	}
+}
+
+func weeklyWorkCommand(schR *repository.ScheduleRepository) func() {
+	log.Println("Initial WeeklyWorkCommand schedule")
+	return func() {
+		ctx := context.Background()
+
+		log.Println("Start weekly work schedule!")
+		workSch, err := schR.GetWeeklySchedule(ctx)
+		if err != nil {
+			log.Println("weeklyWorkCommand Error: failed on get weekly schedule: " + err.Error())
+			return
+		}
+		if workSch == nil {
+			return
+		}
+		log.Println(workSch)
 		//TODO Publish works to Kafka
 	}
 }

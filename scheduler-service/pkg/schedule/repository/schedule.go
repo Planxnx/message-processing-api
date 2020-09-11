@@ -36,12 +36,28 @@ func (schRepo *ScheduleRepository) GetDailySchedule(ctx context.Context) (*[]mod
 	return workSchedule, nil
 }
 
-func (schRepo *ScheduleRepository) GetEveryHourSchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
+func (schRepo *ScheduleRepository) GetWeeklySchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
+	tNow := time.Now()
+	hh, mm, _ := tNow.Clock()
+	workSchedule := &[]model.WorkSchedule{}
+	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
+		"type":         constant.ScheduleType_WEEKLY,
+		"time.weekDay": tNow.Weekday().String(),
+		"time.hour":    hh,
+		"time.minute":  mm,
+	}).All(workSchedule)
+	if err != nil {
+		return nil, err
+	}
+	return workSchedule, nil
+}
+
+func (schRepo *ScheduleRepository) GetHOURLYSchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
 	tNow := time.Now()
 	_, mm, _ := tNow.Clock()
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type":        constant.ScheduleType_EVERYHOUR,
+		"type":        constant.ScheduleType_HOURLY,
 		"time.minute": mm,
 	}).All(workSchedule)
 	if err != nil {
@@ -70,10 +86,10 @@ func (schRepo *ScheduleRepository) GetAllDailySchedule(ctx context.Context) (*[]
 	return workSchedule, nil
 }
 
-func (schRepo *ScheduleRepository) GetAllEveryHourSchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
+func (schRepo *ScheduleRepository) GetAllHOURLYSchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type": constant.ScheduleType_EVERYHOUR,
+		"type": constant.ScheduleType_HOURLY,
 	}).All(workSchedule)
 	if err != nil {
 		return nil, err
@@ -81,12 +97,22 @@ func (schRepo *ScheduleRepository) GetAllEveryHourSchedule(ctx context.Context) 
 	return workSchedule, nil
 }
 
-func (schRepo *ScheduleRepository) InsertDailySchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
+func (schRepo *ScheduleRepository) InsertiDailySchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
 	workSchedule.Type = constant.ScheduleType_DAILY
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }
 
-func (schRepo *ScheduleRepository) InsertEveryHourSchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
-	workSchedule.Type = constant.ScheduleType_EVERYHOUR
+func (schRepo *ScheduleRepository) InsertHOURLYSchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
+	workSchedule.Type = constant.ScheduleType_HOURLY
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
+}
+
+func (schRepo *ScheduleRepository) InsertWeeklySchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
+	workSchedule.Type = constant.ScheduleType_WEEKLY
+	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
+}
+
+func midnightTimeConvert(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
 }
