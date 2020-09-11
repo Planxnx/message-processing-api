@@ -5,7 +5,7 @@ import "time"
 type WorkSchedule struct {
 	Ref1          string    `bson:"ref1"`  //client reference
 	Ref2          string    `bson:"ref2"`  //message reference
-	Ref3          string    `bson:"ref1"`  //end-user reference
+	Ref3          string    `bson:"ref3"`  //end-user reference
 	Owner         string    `bson:"owner"` //service reference
 	CallbackTopic string    `bson:"callbackTopic"`
 	Message       string    `bson:"message"`
