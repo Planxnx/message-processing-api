@@ -10,6 +10,10 @@ import (
 	scheduleRepository "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/repository"
 )
 
+func init() {
+	os.Setenv("TZ", "Asia/Bangkok")
+}
+
 func main() {
 	connection := connection.InitializeConnection()
 
