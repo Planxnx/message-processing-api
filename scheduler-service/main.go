@@ -18,7 +18,7 @@ func main() {
 	connection := connection.InitializeConnection()
 
 	scheduleRepo := scheduleRepository.NewScheduleRepository(connection.MessageProcssingAPIDatabase.Collection("workSchedule"))
-	scheduleCron := cron.NewScheduleUsecase(scheduleRepo)
+	scheduleCron := cron.NewScheduleUsecase(scheduleRepo, connection.KafkaPublisher)
 
 	go scheduleCron.StartFetchSchedule()
 
