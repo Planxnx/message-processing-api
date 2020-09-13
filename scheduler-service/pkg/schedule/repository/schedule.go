@@ -116,6 +116,18 @@ func (schRepo *ScheduleRepository) InsertWeeklySchedule(ctx context.Context, wor
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }
 
+func (schRepo *ScheduleRepository) GetWorkScheduleByReference(ctx context.Context, refType string, refId string, scheduleType string) (*[]model.WorkSchedule, error) {
+	workSchedule := &[]model.WorkSchedule{}
+	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
+		refType: refId,
+		"type":  scheduleType,
+	}).All(workSchedule)
+	if err != nil {
+		return nil, err
+	}
+	return workSchedule, nil
+}
+
 func midnightTimeConvert(t time.Time) time.Time {
 	year, month, day := t.Date()
 	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
