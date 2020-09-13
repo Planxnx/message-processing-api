@@ -5,14 +5,17 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 )
 
-const kafkaHost string = "localhost:9092"
+var (
+	kafkaHost string = "localhost:9092"
+	logger           = watermill.NewStdLogger(false, true)
+)
 
 func NewPubliser() (*kafka.Publisher, error) {
 	config := kafka.PublisherConfig{
 		Brokers:   []string{kafkaHost},
 		Marshaler: kafka.DefaultMarshaler{},
 	}
-	return kafka.NewPublisher(config, watermill.NewStdLogger(false, true))
+	return kafka.NewPublisher(config, logger)
 }
 
 func NewSubscriber() (*kafka.Subscriber, error) {
@@ -21,5 +24,5 @@ func NewSubscriber() (*kafka.Subscriber, error) {
 		Unmarshaler:   kafka.DefaultMarshaler{},
 		ConsumerGroup: "main",
 	}
-	return kafka.NewSubscriber(config, watermill.NewStdLogger(false, true))
+	return kafka.NewSubscriber(config, logger)
 }

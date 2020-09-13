@@ -4,33 +4,29 @@ import (
 	"context"
 	"log"
 
+	createAlarmDelivery "github.com/Planxnx/message-processing-api/alarm-service/internal/createAlarm/delivery"
+	createAlarmUsecase "github.com/Planxnx/message-processing-api/alarm-service/internal/createAlarm/usecase"
+	eventRouter "github.com/Planxnx/message-processing-api/alarm-service/internal/router"
 	"github.com/Planxnx/message-processing-api/alarm-service/pkg/connection"
-
-	scheduleModel "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/model"
 	scheduleRepository "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/repository"
 )
 
 func main() {
 	ctx := context.Background()
-	connection := connection.InitializeConnection()
 
+	connection := connection.InitializeConnection()
 	scheduleRepo := scheduleRepository.NewScheduleRepository(connection.MessageProcssingAPIDatabase.Collection("workSchedule"))
-	result, err := scheduleRepo.InsertEveryHourSchedule(ctx, scheduleModel.WorkSchedule{
-		RefID:         "Test0000x",
-		Owner:         "Planx",
-		Message:       "แจ้งเตือนแสตนด์อัพมีทติ้ง",
-		CallbackTopic: "AlarmMessage",
-		Time: scheduleModel.WorkTime{
-			Date:   "2020-03-17",
-			Hour:   10,
-			Minute: 30,
-			Second: 30,
-		},
-	})
+	createAlarmUseC := createAlarmUsecase.NewCreateAlarmUsecase(scheduleRepo)
+	createAlarmDeli := createAlarmDelivery.NewCreateAlarmDelivery(createAlarmUseC)
+
+	router, err := eventRouter.NewEventRouter(connection.KafkaSubscriber, createAlarmDeli)
 	if err != nil {
-		log.Printf("Error: failed on insert: %s", err.Error())
-		return
+		panic(err)
 	}
-	log.Printf("Insert successful: %v", result.InsertedID)
+
 	log.Println("Start Alarm-service...")
+	if err := router.Run(ctx); err != nil {
+		panic(err)
+	}
+
 }

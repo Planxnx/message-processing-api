@@ -14,3 +14,9 @@ type DefaultMessageFormat struct {
 	Data        map[string]interface{} `json:"data"`        //attachment
 	Type        string                 `json:"type"`        //message type eg. reply message, notification
 }
+
+const (
+	CommonMessage = "commonMessage"
+	ReplyMessage  = "replyMessage"
+	Notification  = "notification"
+)
