@@ -6,6 +6,7 @@ import (
 
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/constant"
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/model"
+	"github.com/pkg/errors"
 	"github.com/qiniu/qmgo"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -108,6 +109,9 @@ func (schRepo *ScheduleRepository) InsertHOURLYSchedule(ctx context.Context, wor
 }
 
 func (schRepo *ScheduleRepository) InsertWeeklySchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
+	if workSchedule.Time.WeekDay == "" {
+		return nil, errors.Errorf("WeekDay is invalid")
+	}
 	workSchedule.Type = constant.ScheduleType_WEEKLY
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }

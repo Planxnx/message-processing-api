@@ -18,10 +18,10 @@ type WorkSchedule struct {
 }
 
 type WorkTime struct {
-	Timestamp time.Time `bson:"timestamp" json:"ref1"` //ISO date
-	Day       int       `bson:"day" json:"ref1"`
-	WeekDay   string    `bson:"weekDay" json:"ref1"`
-	Hour      int       `bson:"hour" json:"ref1"`
-	Minute    int       `bson:"minute" json:"ref1"`
-	Second    int       `bson:"second" json:"ref1"`
+	Timestamp time.Time `bson:"timestamp" json:"timestamp"` //date
+	Day       int       `bson:"day" json:"day"`
+	WeekDay   string    `bson:"weekDay" json:"weekDay"` //required for weekly
+	Hour      int       `bson:"hour" json:"hour"`       //required for weekly,daily
+	Minute    int       `bson:"minute" json:"minute"`   //require for weekly,daily,hourly
+	Second    int       `bson:"second" json:"second"`
 }
