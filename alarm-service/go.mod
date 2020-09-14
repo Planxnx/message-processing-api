@@ -3,6 +3,7 @@ module github.com/Planxnx/message-processing-api/alarm-service
 go 1.14
 
 require (
+	github.com/Planxnx/message-processing-api/message-schema v0.0.0-20200914043633-32f835e1f4da
 	github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200913145920-718a7e74291b
 	github.com/Shopify/sarama v1.27.0 // indirect
 	github.com/ThreeDotsLabs/watermill v1.1.1

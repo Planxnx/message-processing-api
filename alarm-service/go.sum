@@ -1,4 +1,7 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/Planxnx/message-processing-api v0.0.0-20200914043633-32f835e1f4da h1:7EIibkqlbQoIXx3z54NdYhGjBBrwByRg2oT9TpNlYIs=
+github.com/Planxnx/message-processing-api/message-schema v0.0.0-20200914043633-32f835e1f4da h1:ZJ+Kr53QWlU0b4Ps8gOArggSTfNDzvKnm5zx3jekQ2Y=
+github.com/Planxnx/message-processing-api/message-schema v0.0.0-20200914043633-32f835e1f4da/go.mod h1:I5NfSMfaARsEn53SXy3UQW+PXIbkvl0Fvl4Ex3WyCUU=
 github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200913145920-718a7e74291b h1:AqoClKkk4+Z2iOi4NWBj7LaLdf8IAP8kgQoE1qo8nTg=
 github.com/Planxnx/message-processing-api/scheduler-service v0.0.0-20200913145920-718a7e74291b/go.mod h1:FicaSvdRdXX2NJ6ywi9ZM5Tg/T6DF7XragAdqHxe4mk=
 github.com/Shopify/sarama v1.26.0 h1:C+zFi+/NJdfeJgZWbu+WaLgk4NcsbmqfFTKsoJmR39U=

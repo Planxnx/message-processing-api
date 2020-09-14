@@ -1,4 +1,4 @@
-package kafka
+package messageschema
 
 import "time"
 
@@ -16,7 +16,7 @@ type DefaultMessageFormat struct {
 }
 
 const (
-	CommonMessage = "commonMessage"
-	ReplyMessage  = "replyMessage"
-	Notification  = "notification"
+	CommonMessage string = "commonMessage"
+	ReplyMessage  string = "replyMessage"
+	Notification  string = "notification"
 )

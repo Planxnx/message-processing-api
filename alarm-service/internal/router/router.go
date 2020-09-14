@@ -3,7 +3,7 @@ package router
 import (
 	"time"
 
-	kafkaPkg "github.com/Planxnx/message-processing-api/alarm-service/pkg/connection/kafka"
+	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -33,6 +33,6 @@ func NewEventRouter(kafkaSubscriber *kafka.Subscriber, caDelivery *createAlarmDe
 		}.Middleware,
 		middleware.Recoverer,
 	)
-	router.AddNoPublisherHandler("CommonCreateAlarmHandler", kafkaPkg.CommonMessage, kafkaSubscriber, caDelivery.CommonMessageHandler)
+	router.AddNoPublisherHandler("CommonCreateAlarmHandler", messageSchema.CommonMessage, kafkaSubscriber, caDelivery.CommonMessageHandler)
 	return router, nil
 }
