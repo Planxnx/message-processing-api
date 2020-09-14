@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
+	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
+
 	createAlarmUsecase "github.com/Planxnx/message-processing-api/alarm-service/internal/createAlarm/usecase"
-	kafkaPkg "github.com/Planxnx/message-processing-api/alarm-service/pkg/connection/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 )
 
@@ -22,7 +23,7 @@ func NewCreateAlarmDelivery(caUsecase *createAlarmUsecase.CreateAlarmUsecase) *C
 func (ca *CreateAlarmDelivery) CommonMessageHandler(msg *message.Message) error {
 	//TODO: implement commond msg
 	ctx := msg.Context()
-	resultMsg := &kafkaPkg.DefaultMessageFormat{}
+	resultMsg := &messageSchema.DefaultMessageFormat{}
 	json.Unmarshal(msg.Payload, resultMsg)
 
 	if resultMsg.Features["dailyAlarm"] {
