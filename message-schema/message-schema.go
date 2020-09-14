@@ -1,4 +1,4 @@
-package messagescheama
+package messageschema
 
 import "time"
 
