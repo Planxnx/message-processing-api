@@ -59,7 +59,10 @@ app.post("/message", async (req, res) => {
       topic: topic || "TEST_TOPIC",
       messages: [
         {
-          value: message || "TEST_MESSAGE",
+          value: JSON.stringify(message|| {
+            message: "TEST_MESSAGE",
+            "publishedBy": "POC_Producer"
+          }),
         },
       ],
     });
