@@ -1,9 +1,13 @@
 package health
 
-import "net/http"
+import "github.com/gofiber/fiber/v2"
 
-func HealthHandle(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Health  OK"))
-	return
+type HealthHandler struct{}
+
+func New() *HealthHandler {
+	return &HealthHandler{}
+}
+
+func (HealthHandler) CheckHealth(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).SendString("Health OK")
 }

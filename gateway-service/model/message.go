@@ -13,5 +13,5 @@ type MessageResponse struct {
 }
 
 type MessageResponseData struct {
-	MessageRef string `json:"messageRef"` //message reference
+	MessageRef string `json:"messageRef,omitempty"` //message reference
 }
