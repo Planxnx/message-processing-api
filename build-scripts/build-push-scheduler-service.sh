@@ -1,14 +1,14 @@
 #!/bin/sh
 set -e
-
-echo "Are you sure to deploy below services \n ${SVC_LIST// /\n }"
+SVCNAME="scheduler"
+echo "Are you sure to deploy ${SVCNAME} service"
 read -p "Please confirm [Y/N]? " -n 1 -r
 echo # (optional) move to a new line
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     PROJECT="message-processing-api"
-    DEPLOYNAME="apigateway"
-    TAG="test"
+    DEPLOYNAME=SVCNAME
+    TAG="latest"
     REPOSITORY="planxthanee/$PROJECT-$DEPLOYNAME"
     IMAGE="$REPOSITORY:$TAG"
     # HELM="__helm"
@@ -16,7 +16,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     read -p "Do you want to build code in this repo before deploy [Y/N]? " -n 1 -r
     echo # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        cd ./producer-service
+        cd ./scheduler-service
         docker build -t $IMAGE .
         docker push $IMAGE
     fi
