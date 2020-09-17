@@ -43,8 +43,12 @@ func main() {
 	log.Fatal(app.Listen(":" + port))
 }
 
-func defaultErrorHandler(ctx *fiber.Ctx, err error) error {
-	return ctx.JSON(model.MessageResponse{
+func defaultErrorHandler(c *fiber.Ctx, err error) error {
+	code := fiber.StatusInternalServerError
+	if e, ok := err.(*fiber.Error); ok {
+		code = e.Code
+	}
+	return c.Status(code).JSON(model.MessageResponse{
 		Message: err.Error(),
 	})
 }
