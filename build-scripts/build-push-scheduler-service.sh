@@ -11,7 +11,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     TAG="latest"
     REPOSITORY="planxthanee/$PROJECT-$DEPLOYNAME"
     IMAGE="$REPOSITORY:$TAG"
-    # HELM="__helm"
 
     read -p "Do you want to build code in this repo before deploy [Y/N]? " -n 1 -r
     echo # (optional) move to a new line
