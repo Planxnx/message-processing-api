@@ -1,8 +1,8 @@
-package api
+package restful
 
 import (
-	"github.com/Planxnx/message-processing-api/gateway-service/api/health"
-	"github.com/Planxnx/message-processing-api/gateway-service/api/message"
+	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/health"
+	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/message"
 
 	"github.com/gofiber/fiber/v2"
 
