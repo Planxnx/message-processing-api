@@ -1,0 +1,6 @@
+restful:
+  port: 8888
+
+botnoi:
+  address: https://openapi.botnoi.ai/service-api/
+  token: YOUR_TOKEN
