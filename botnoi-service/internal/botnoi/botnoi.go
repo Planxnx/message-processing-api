@@ -7,21 +7,21 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-type botnoiService struct {
-	Address string
-	Token   string
+type BotnoiService struct {
+	address string
+	token   string
 }
 
-func New(address string, token string) *botnoiService {
-	return &botnoiService{
-		Address: address,
-		Token:   token,
+func New(address string, token string) *BotnoiService {
+	return &BotnoiService{
+		address: address,
+		token:   token,
 	}
 }
 
-func (b *botnoiService) request(endpoint string, body interface{}) (*fasthttp.Response, error) {
-	url := fmt.Sprintf("%s/%s", b.Address, endpoint)
-	requestAuthorization := fmt.Sprintf("Bearer %s", b.Token)
+func (b *BotnoiService) request(endpoint string, body interface{}) (*fasthttp.Response, error) {
+	url := fmt.Sprintf("%s/%s", b.address, endpoint)
+	requestAuthorization := fmt.Sprintf("Bearer %s", b.token)
 	requestBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, err

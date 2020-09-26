@@ -3,6 +3,7 @@ package botnoi
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -16,21 +17,21 @@ type chitchatService struct {
 	Token   string
 }
 
-// GetReplyMessage .
-func (s *botnoiService) ChitChatMessage(rawMessage string) (string, error) {
-
+func (*BotnoiService) getChitChatParams(rawMessage string) string {
 	messageSlice := strings.Split(rawMessage, " ")
-	message := strings.Join(messageSlice, "%20")
+	return fmt.Sprintf("keyword=%s&styleid=1&botname=บอทใหญ่", strings.Join(messageSlice, "%20"))
+}
 
-	endpoint := fmt.Sprintf("botnoichitchat?keyword=%s&styleid=1&botname=บอทใหญ่", message)
+// GetReplyMessage .
+func (s *BotnoiService) ChitChatMessage(message string) (string, error) {
+	endpoint := fmt.Sprintf("botnoichitchat?%s", s.getChitChatParams(message))
 	resp, err := s.request(endpoint, nil)
-
 	if err != nil {
 		return "", err
 	}
 
 	responseBody := &ChitChatResponse{}
 	json.Unmarshal(resp.Body(), responseBody)
-
+	log.Println(responseBody)
 	return responseBody.Reply, nil
 }
