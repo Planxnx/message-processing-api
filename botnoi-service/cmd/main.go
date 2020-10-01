@@ -20,6 +20,9 @@ func main() {
 	restfulAPI := restful.New(&restful.RouterParamas{
 		BotnoiService: botnoiService,
 	})
+
+	//TODO: received message from kafka
+
 	log.Println("start server on :", configs.Restful.Port)
 	if err := fasthttp.ListenAndServe(":"+strconv.Itoa(configs.Restful.Port), restfulAPI.Handler); err != http.ErrServerClosed {
 		log.Fatalf("main Error: failed on start server: %v", err)
