@@ -37,12 +37,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
 	}
+	kafkaNewPublisher, err := kafapkg.NewPubliser()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka publisher: %v", err)
+	}
+
+	messageUsecase := messageusecase.New(kafkaNewPublisher)
 
 	messagequeueRouter, err := messagequeue.NewMessageQueueRouter(kafkaSubscriber)
 	if err != nil {
 		log.Fatalf("main Error: failed on create new messagequeue router: %v", err)
 	}
-	messageUsecase := messageusecase.New()
 
 	healthHandler := health.New()
 	messageHandler := message.New(messageUsecase)

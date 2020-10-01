@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/ThreeDotsLabs/watermill"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 
 	"github.com/Planxnx/message-processing-api/gateway-service/model"
 
@@ -26,8 +26,8 @@ func New(m *messageusecase.MessageUsecase) *MessageHandler {
 func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
-	messageRef := uuid.New().String()
-	mockID, err := m.MessageUsecase.Emit(&messageschema.DefaultMessageFormat{
+	messageRef := watermill.NewUUID()
+	err := m.MessageUsecase.Emit(messageRef, &messageschema.DefaultMessageFormat{
 		Message:     reqBody.Message,
 		Ref1:        c.IP(),
 		Ref2:        messageRef,
@@ -46,7 +46,7 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(&model.MessageResponse{
 		Message: "Success",
 		Data: model.MessageResponseData{
-			MessageRef: mockID,
+			MessageRef: messageRef,
 		},
 	})
 }
