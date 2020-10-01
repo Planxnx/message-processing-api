@@ -23,6 +23,7 @@ func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
 	resultMsg := &messageSchema.DefaultMessageFormat{}
 	json.Unmarshal(msg.Payload, resultMsg)
 
+	//TODO: send to webhook
 	log.Printf("Received Notification Event:\n  ---Unmarshal Message: %v \n  ---Raw Message: %v \n", resultMsg, string(msg.Payload))
 
 	return nil
