@@ -3,8 +3,9 @@ package botnoi
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
+
+	"github.com/valyala/fasthttp"
 )
 
 type ChitChatResponse struct {
@@ -26,12 +27,15 @@ func (*BotnoiService) getChitChatParams(rawMessage string) string {
 func (s *BotnoiService) ChitChatMessage(message string) (string, error) {
 	endpoint := fmt.Sprintf("botnoichitchat?%s", s.getChitChatParams(message))
 	resp, err := s.request(endpoint, nil)
+	defer fasthttp.ReleaseResponse(resp)
 	if err != nil {
 		return "", err
 	}
 
 	responseBody := &ChitChatResponse{}
-	json.Unmarshal(resp.Body(), responseBody)
-	log.Println(responseBody)
+	if err := json.Unmarshal(resp.Body(), responseBody); err != nil {
+		return "", err
+	}
+
 	return responseBody.Reply, nil
 }

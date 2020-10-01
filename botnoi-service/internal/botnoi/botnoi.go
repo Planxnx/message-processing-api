@@ -37,7 +37,6 @@ func (b *BotnoiService) request(endpoint string, body interface{}) (*fasthttp.Re
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
 
 	if err := fasthttp.Do(req, resp); err != nil {
 		return nil, fmt.Errorf("botnoi request error: failed on send request: %v", err)
