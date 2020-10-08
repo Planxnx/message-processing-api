@@ -12,6 +12,8 @@ import (
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/health"
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/message"
 
+	mqmessage "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/message"
+
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
 
 	"github.com/Planxnx/message-processing-api/gateway-service/model"
@@ -33,24 +35,35 @@ func init() {
 func main() {
 	ctx := context.Background()
 
-	kafkaSubscriber, err := kafapkg.NewSubscriber()
-	if err != nil {
-		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
-	}
-
-	messagequeueRouter, err := messagequeue.NewMessageQueueRouter(kafkaSubscriber)
-	if err != nil {
-		log.Fatalf("main Error: failed on create new messagequeue router: %v", err)
-	}
-	messageUsecase := messageusecase.New()
-
-	healthHandler := health.New()
-	messageHandler := message.New(messageUsecase)
-
 	app := fiber.New(fiber.Config{
 		ErrorHandler: defaultErrorHandler,
 	})
 
+	//Initial Dependency
+	kafkaSubscriber, err := kafapkg.NewSubscriber()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
+	}
+	kafkaNewPublisher, err := kafapkg.NewPubliser()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka publisher: %v", err)
+	}
+	messageUsecase := messageusecase.New(kafkaNewPublisher)
+
+	//Initial MessageQueue Dependency
+	messageMQHandler := mqmessage.New(messageUsecase)
+	messageQueueouterDependency := &messagequeue.RouterDependency{
+		KafkaSubscriber: kafkaSubscriber,
+		MessageHandler:  messageMQHandler,
+	}
+	messagequeueRouter, err := messageQueueouterDependency.InitialRouter()
+	if err != nil {
+		log.Fatalf("main Error: failed on create new messagequeue router: %v", err)
+	}
+
+	//Initial Restful Dependency
+	healthHandler := health.New()
+	messageHandler := message.New(messageUsecase)
 	routerDependency := &restful.RouterDependency{
 		HealthHandler:  healthHandler,
 		App:            app,
@@ -58,6 +71,7 @@ func main() {
 	}
 	routerDependency.InitialRouter()
 
+	//Start services
 	go func() {
 		log.Println("Start messagequeue subscriber ...")
 		if err := messagequeueRouter.Run(ctx); err != nil {

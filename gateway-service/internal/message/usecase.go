@@ -1,16 +1,34 @@
 package message
 
 import (
+	"encoding/json"
+	"fmt"
+
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
-	"github.com/google/uuid"
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/ThreeDotsLabs/watermill/message"
 )
 
-type MessageUsecase struct{}
-
-func New() *MessageUsecase {
-	return &MessageUsecase{}
+type MessageUsecase struct {
+	KafkaPublisher *kafka.Publisher
 }
 
-func (MessageUsecase) Emit(msg *messageschema.DefaultMessageFormat) (string, error) {
-	return uuid.New().String(), nil
+func New(k *kafka.Publisher) *MessageUsecase {
+	return &MessageUsecase{
+		KafkaPublisher: k,
+	}
+}
+
+func (m *MessageUsecase) Emit(uuid string, msg *messageschema.DefaultMessageFormat) error {
+	msgJSON, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	kafkaMsg := message.NewMessage(uuid, msgJSON)
+	if err := m.KafkaPublisher.Publish(messageschema.CommonMessage, kafkaMsg); err != nil {
+		return fmt.Errorf("failed on publish message: %v", err)
+	}
+
+	return nil
 }

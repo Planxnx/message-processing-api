@@ -1,10 +1,9 @@
 package messagequeue
 
 import (
-	"encoding/json"
-	"log"
 	"time"
 
+	messagehandler "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/message"
 	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -17,7 +16,12 @@ var (
 	logger = watermill.NewStdLogger(false, true)
 )
 
-func NewMessageQueueRouter(kafkaSubscriber *kafka.Subscriber) (*message.Router, error) {
+type RouterDependency struct {
+	KafkaSubscriber *kafka.Subscriber
+	MessageHandler  *messagehandler.MessageHandler
+}
+
+func (r *RouterDependency) InitialRouter() (*message.Router, error) {
 	router, err := message.NewRouter(message.RouterConfig{}, logger)
 	if err != nil {
 		return nil, err
@@ -34,13 +38,6 @@ func NewMessageQueueRouter(kafkaSubscriber *kafka.Subscriber) (*message.Router, 
 		middleware.Recoverer,
 	)
 
-	router.AddNoPublisherHandler("ReplyMessageHandler", messageSchema.ReplyMessage, kafkaSubscriber, func(msg *message.Message) error {
-		resultMsg := &messageSchema.DefaultMessageFormat{}
-		json.Unmarshal(msg.Payload, resultMsg)
-
-		log.Printf("Received Notification Event:\n  ---Unmarshal Message: %v \n  ---Raw Message: %v \n", resultMsg, string(msg.Payload))
-
-		return nil
-	})
+	router.AddNoPublisherHandler("ReplyMessageHandler", messageSchema.ReplyMessage, r.KafkaSubscriber, r.MessageHandler.ReplyMessage)
 	return router, nil
 }
