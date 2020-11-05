@@ -100,7 +100,7 @@ func defaultErrorHandler(c *fiber.Ctx, err error) error {
 	if e, ok := err.(*fiber.Error); ok {
 		code = e.Code
 	}
-	return c.Status(code).JSON(model.MessageResponse{
+	return c.Status(code).JSON(model.Response{
 		Message: err.Error(),
 	})
 }
