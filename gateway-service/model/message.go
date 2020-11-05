@@ -7,11 +7,6 @@ type MessageRequest struct {
 	Data     map[string]interface{} `json:"data,omitempty"` //attachment
 }
 
-type MessageResponse struct {
-	Message string              `json:"message"`
-	Data    MessageResponseData `json:"data,omitempty"` //attachment
-}
-
 type MessageResponseData struct {
 	MessageRef string `json:"messageRef,omitempty"` //message reference
 }

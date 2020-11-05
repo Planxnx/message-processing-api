@@ -3,6 +3,8 @@ package restful
 import (
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/health"
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/message"
+	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/middleware"
+	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/provider"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -13,8 +15,10 @@ import (
 
 type RouterDependency struct {
 	App            *fiber.App
+	Middleware     *middleware.Middleware
 	HealthHandler  *health.HealthHandler
 	MessageHandler *message.MessageHandler
+	ProvderHandler *provider.ProviderHandler
 }
 
 func (r *RouterDependency) InitialRouter() {
@@ -27,5 +31,9 @@ func (r *RouterDependency) InitialRouter() {
 	v1.Use(logger.New())
 	v1.Use(helmet.New())
 
-	v1.Post("/", r.MessageHandler.MainEndpoint)
+	v1.Post("/provider/register", r.ProvderHandler.RegisterEndpoint)
+
+	authRoute := v1.Group("/", r.Middleware.AuthenticationMiddleware)
+
+	authRoute.Post("/", r.MessageHandler.MainEndpoint)
 }

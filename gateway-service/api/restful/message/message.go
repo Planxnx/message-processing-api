@@ -43,7 +43,7 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 		log.Printf("MainEndpoint Error: failed on emit message: %v", err)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
-	return c.Status(fiber.StatusOK).JSON(&model.MessageResponse{
+	return c.Status(fiber.StatusOK).JSON(&model.Response{
 		Message: "Success",
 		Data: model.MessageResponseData{
 			MessageRef: messageRef,
