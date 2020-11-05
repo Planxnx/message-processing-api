@@ -19,8 +19,8 @@ func New(pC *qmgo.Collection) *ProviderUsercase {
 	}
 }
 
-func (*ProviderUsercase) getNewSecret() string {
-	newBytes := make([]byte, 8)
+func (*ProviderUsercase) getNewToken() string {
+	newBytes := make([]byte, 16)
 	rand.Read(newBytes)
 	return fmt.Sprintf("%x", newBytes)
 }
@@ -37,14 +37,14 @@ func (pU *ProviderUsercase) GetProviderByID(ctx context.Context, id string) (*Pr
 }
 
 func (pU *ProviderUsercase) CreateNewProvider(ctx context.Context, providerData *ProviderData) (*CreateProviderResult, error) {
-	secret := pU.getNewSecret()
-	providerData.Secret = secret
+	token := pU.getNewToken()
+	providerData.Token = token
 	_, err := pU.ProviderCollection.InsertOne(ctx, providerData)
 	if err != nil {
 		return nil, err
 	}
 	return &CreateProviderResult{
-		ID:     providerData.ID,
-		Secret: secret,
+		ID:    providerData.ID,
+		Token: token,
 	}, nil
 }

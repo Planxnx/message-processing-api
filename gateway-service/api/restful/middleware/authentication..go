@@ -19,12 +19,12 @@ func New(pU *providerusecase.ProviderUsercase) *Middleware {
 
 func (m *Middleware) AuthenticationMiddleware(c *fiber.Ctx) error {
 	providerID := c.Get("providerID")
-	secret := c.Get("secret")
+	token := c.Get("token")
 
 	providerData, err := m.ProviderUsecase.GetProviderByID(c.Context(), providerID)
-	if err != nil || providerData.Secret != secret {
+	if err != nil || providerData.Token != token {
 		return c.Status(fiber.StatusUnauthorized).JSON(&model.Response{
-			Message: "provider not found or wrong secret",
+			Message: "provider not found or wrong token",
 		})
 	}
 

@@ -32,7 +32,7 @@ func (pH *ProviderHandler) RegisterEndpoint(c *fiber.Ctx) error {
 		Message: "Success",
 		Data: &model.ProviderResgisterResponseData{
 			ProviderID: result.ID,
-			Secret:     result.Secret,
+			Token:      result.Token,
 		},
 	})
 }

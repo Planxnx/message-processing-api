@@ -8,5 +8,5 @@ type ProviderResgisterRequest struct {
 
 type ProviderResgisterResponseData struct {
 	ProviderID string `json:"providerID,omitempty"`
-	Secret     string `json:"secret,omitempty"`
+	Token      string `json:"token,omitempty"`
 }
