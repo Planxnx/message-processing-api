@@ -19,7 +19,7 @@ func (pH *ProviderHandler) RegisterEndpoint(c *fiber.Ctx) error {
 
 	result, err := pH.ProviderUsecase.CreateNewProvider(c.Context(), &providerusecase.ProviderData{
 		ID:      reqBody.ProviderID,
-		Name:    reqBody.Name,
+		Name:    reqBody.ProviderName,
 		Webhook: reqBody.Webhook,
 	})
 	if err != nil {
