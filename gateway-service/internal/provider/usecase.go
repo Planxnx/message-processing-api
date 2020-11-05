@@ -38,6 +38,7 @@ func (pU *ProviderUsercase) GetProviderByID(ctx context.Context, id string) (*Pr
 
 func (pU *ProviderUsercase) CreateNewProvider(ctx context.Context, providerData *ProviderData) (*CreateProviderResult, error) {
 	token := pU.getNewToken()
+	//TODO: hash token with secret
 	providerData.Token = token
 	_, err := pU.ProviderCollection.InsertOne(ctx, providerData)
 	if err != nil {
