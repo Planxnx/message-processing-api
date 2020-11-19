@@ -18,8 +18,8 @@ func New(pU *providerusecase.ProviderUsercase) *Middleware {
 }
 
 func (m *Middleware) AuthenticationMiddleware(c *fiber.Ctx) error {
-	providerID := c.Get("providerID")
-	token := c.Get("token")
+	providerID := c.Get("Provider-ID")
+	token := c.Get("Authorization")
 
 	providerData, err := m.ProviderUsecase.GetProviderByID(c.Context(), providerID)
 	if err != nil || providerData.Token != token {

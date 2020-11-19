@@ -1,30 +1,51 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
-	"strconv"
 
 	"github.com/Planxnx/message-processing-api/botnoi-service/config"
-	"github.com/Planxnx/message-processing-api/botnoi-service/internal/api/restful"
-	"github.com/valyala/fasthttp"
 
+	"github.com/Planxnx/message-processing-api/botnoi-service/internal/api/messagequeue"
+	mqmessage "github.com/Planxnx/message-processing-api/botnoi-service/internal/api/messagequeue/message"
 	"github.com/Planxnx/message-processing-api/botnoi-service/internal/botnoi"
+	"github.com/Planxnx/message-processing-api/botnoi-service/internal/message"
+
+	kafapkg "github.com/Planxnx/message-processing-api/botnoi-service/pkg/kafka"
 )
 
 func main() {
+	ctx := context.Background()
+
 	configs := config.InitialConfig()
 
-	botnoiService := botnoi.New(configs.Botnoi.Address, configs.Botnoi.Token)
+	//Initial Dependency
+	kafkaSubscriber, err := kafapkg.NewSubscriber()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
+	}
+	kafkaNewPublisher, err := kafapkg.NewPubliser()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka publisher: %v", err)
+	}
 
-	restfulAPI := restful.New(&restful.RouterParamas{
-		BotnoiService: botnoiService,
-	})
+	//Initial Usecase
+	botnoiUsecase := botnoi.New(configs.Botnoi.Address, configs.Botnoi.Token)
+	messageUsecase := message.NewUsecase(kafkaNewPublisher)
 
-	//TODO: received message from kafka
+	messageMQHandler := mqmessage.New(messageUsecase, botnoiUsecase)
 
-	log.Println("start server on :", configs.Restful.Port)
-	if err := fasthttp.ListenAndServe(":"+strconv.Itoa(configs.Restful.Port), restfulAPI.Handler); err != http.ErrServerClosed {
-		log.Fatalf("main Error: failed on start server: %v", err)
+	messageQueueRouterDependency := &messagequeue.RouterDependency{
+		KafkaSubscriber: kafkaSubscriber,
+		MessageHandler:  messageMQHandler,
+	}
+	messagequeueRouter, err := messageQueueRouterDependency.InitialRouter()
+	if err != nil {
+		log.Fatalf("main Error: failed on create new messagequeue router: %v", err)
+	}
+
+	log.Println("Start messagequeue subscriber ...")
+	if err := messagequeueRouter.Run(ctx); err != nil {
+		log.Fatalf("main Error: failed on start messagequeue subscruber: %v", err)
 	}
 }

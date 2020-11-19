@@ -24,12 +24,13 @@ func New(m *messageusecase.MessageUsecase) *MessageHandler {
 }
 
 func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
+	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
 	messageRef := watermill.NewUUID()
-	err := m.MessageUsecase.Emit(messageRef, &messageschema.DefaultMessageFormat{
+	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
 		Message:     reqBody.Message,
-		Ref1:        c.IP(),
+		Ref1:        providerID,
 		Ref2:        messageRef,
 		Ref3:        reqBody.UserRef,
 		Owner:       "Gateway service",
