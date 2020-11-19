@@ -3,8 +3,9 @@ package provider
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"log"
+
+	"encoding/base64"
 
 	"github.com/qiniu/qmgo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,9 +22,9 @@ func New(pC *qmgo.Collection) *ProviderUsercase {
 }
 
 func (*ProviderUsercase) getNewToken() string {
-	newBytes := make([]byte, 16)
+	newBytes := make([]byte, 64)
 	rand.Read(newBytes)
-	return fmt.Sprintf("%x", newBytes)
+	return base64.StdEncoding.EncodeToString(newBytes)
 }
 
 func (pU *ProviderUsercase) GetProviderByID(ctx context.Context, id string) (*ProviderData, error) {
