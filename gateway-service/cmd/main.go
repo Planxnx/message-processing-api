@@ -15,6 +15,7 @@ import (
 
 	mqmessage "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/message"
 
+	callbackusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/callback"
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
 	providerusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/provider"
 
@@ -64,9 +65,10 @@ func main() {
 	//Initial Usecase Dependency
 	messageUsecase := messageusecase.New(kafkaNewPublisher)
 	providerUsecase := providerusecase.New(providerCollection)
+	callbackUsecase := callbackusecase.New()
 
 	//Initial MessageQueue Dependency
-	messageMQHandler := mqmessage.New(messageUsecase)
+	messageMQHandler := mqmessage.New(messageUsecase, providerUsecase, callbackUsecase)
 	messageQueueouterDependency := &messagequeue.RouterDependency{
 		KafkaSubscriber: kafkaSubscriber,
 		MessageHandler:  messageMQHandler,

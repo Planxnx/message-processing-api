@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	callbackusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/callback"
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
@@ -20,9 +21,11 @@ type MessageHandler struct {
 	callbackUsecase *callbackusecase.CallbackUsecase
 }
 
-func New(m *messageusecase.MessageUsecase) *MessageHandler {
+func New(m *messageusecase.MessageUsecase, p *providerusecase.ProviderUsercase, cu *callbackusecase.CallbackUsecase) *MessageHandler {
 	return &MessageHandler{
-		messageUsecase: m,
+		messageUsecase:  m,
+		providerUsecase: p,
+		callbackUsecase: cu,
 	}
 }
 
@@ -34,9 +37,10 @@ func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
 	provider, err := m.providerUsecase.GetProviderByID(ctx, resultMsg.Ref1)
 	if err != nil {
 		log.Printf("ReplyMessage Error: failed on get provider: %v", err)
-		return err
+		return nil
 	}
 
+	time.Sleep(1 * time.Second) //Add deley
 	_, err = m.callbackUsecase.Request(provider.Webhook, map[string]interface{}{
 		"ref1": resultMsg.Ref1,
 		"ref2": resultMsg.Ref2,
@@ -46,8 +50,8 @@ func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
 	})
 	if err != nil {
 		log.Printf("ReplyMessage Error: failed on send callback to webhook: %v", err)
-		return err
+		return nil
 	}
-
+	log.Println("==================")
 	return nil
 }

@@ -12,12 +12,11 @@ type CallbackUsecase struct {
 	token   string
 }
 
-func New(address string, token string) *CallbackUsecase {
+func New() *CallbackUsecase {
 	return &CallbackUsecase{}
 }
 
 func (*CallbackUsecase) Request(endpoint string, body interface{}) (*fasthttp.Response, error) {
-	url := fmt.Sprintf("%s", endpoint)
 	requestBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
@@ -28,10 +27,11 @@ func (*CallbackUsecase) Request(endpoint string, body interface{}) (*fasthttp.Re
 
 	req.Header.SetMethod(fasthttp.MethodPost)
 	req.SetBody(requestBody)
-	req.SetRequestURI(url)
+	req.SetRequestURI(endpoint)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
 
 	if err := fasthttp.Do(req, resp); err != nil {
 		return nil, fmt.Errorf("callback request error: failed on send request: %v", err)

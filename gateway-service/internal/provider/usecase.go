@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"log"
 
 	"github.com/qiniu/qmgo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -33,6 +34,8 @@ func (pU *ProviderUsercase) GetProviderByID(ctx context.Context, id string) (*Pr
 	if err != nil {
 		return nil, err
 	}
+	log.Println(providerData)
+
 	return providerData, nil
 }
 
