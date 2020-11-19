@@ -33,12 +33,31 @@ router.post('/message-processing-api', async (req, res, next) => {
 router.post('/line', async (req, res, next) => {
   const events = req.body.events;
   console.log(`Received Line webhook events:${JSON.stringify(events)}\n`);
-  for (let event of events) {
-    if (event.type == 'message') {
-      let userRef = event.source.userId;
-      userRefReplyToken[userRef] = event.replyToken;
-      mpaService.sendChitchat(event.message.text, userRef);
+  try {
+    for (let event of events) {
+      if (event.type == 'message') {
+        const message = event.message.text;
+        if (message.startsWith('/')) {
+          if (message == '/help') {
+            lineClient.replyMessage(event.replyToken, {
+              type: 'text',
+              text: 'HELP🚑\n- ฟีเจอร์ตอนนี้ยังมีแค่คุยเล่นนะค้าบ',
+            });
+          } else {
+            lineClient.replyMessage(event.replyToken, {
+              type: 'text',
+              text: "ดูคำสั่งเพิ่มเติ่ม พิมพ์ '/help'",
+            });
+          }
+          continue;
+        }
+        let userRef = event.source.userId;
+        userRefReplyToken[userRef] = event.replyToken;
+        mpaService.sendChitchat(message, userRef);
+      }
     }
+  } catch (error) {
+    console.log(`Error Line webhook events:${JSON.stringify(events)}\n`);
   }
   res.json({});
 });
