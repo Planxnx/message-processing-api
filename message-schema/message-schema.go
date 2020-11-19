@@ -16,7 +16,8 @@ type DefaultMessageFormat struct {
 }
 
 const (
-	CommonMessage string = "commonMessage"
-	ReplyMessage  string = "replyMessage"
-	Notification  string = "notification"
+	CommonMessage   string = "commonMessage"
+	ReplyMessage    string = "replyMessage"
+	Notification    string = "notification"
+	ChitchatMessage string = "chitchat"
 )
