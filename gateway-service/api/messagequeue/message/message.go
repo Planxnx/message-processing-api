@@ -1,30 +1,53 @@
 package message
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
+	callbackusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/callback"
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
+	providerusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/provider"
+
 	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 )
 
 type MessageHandler struct {
-	MessageUsecase *messageusecase.MessageUsecase
+	messageUsecase  *messageusecase.MessageUsecase
+	providerUsecase *providerusecase.ProviderUsercase
+	callbackUsecase *callbackusecase.CallbackUsecase
 }
 
 func New(m *messageusecase.MessageUsecase) *MessageHandler {
 	return &MessageHandler{
-		MessageUsecase: m,
+		messageUsecase: m,
 	}
 }
 
 func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
+	ctx := context.Background()
 	resultMsg := &messageSchema.DefaultMessageFormat{}
 	json.Unmarshal(msg.Payload, resultMsg)
 
-	//TODO: send to webhook
-	log.Printf("Received Notification Event:\n  ---Unmarshal Message: %v \n  ---Raw Message: %v \n", resultMsg, string(msg.Payload))
+	provider, err := m.providerUsecase.GetProviderByID(ctx, resultMsg.Ref1)
+	if err != nil {
+		log.Printf("ReplyMessage Error: failed on get provider: %v", err)
+		return err
+	}
+
+	_, err = m.callbackUsecase.Request(provider.Webhook, map[string]interface{}{
+		"ref1": resultMsg.Ref1,
+		"ref2": resultMsg.Ref2,
+		"ref3": resultMsg.Ref3,
+		"type": resultMsg.Type,
+		"data": resultMsg.Data,
+	})
+	if err != nil {
+		log.Printf("ReplyMessage Error: failed on send callback to webhook: %v", err)
+		return err
+	}
 
 	return nil
 }
