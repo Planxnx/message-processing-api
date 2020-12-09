@@ -46,3 +46,17 @@ func (m *MessageUsecase) EmitReply(uuid string, msg *messageschema.DefaultMessag
 
 	return nil
 }
+
+func (m *MessageUsecase) Emit(uuid string, topic string, msg *messageschema.DefaultMessageFormat) error {
+	msgJSON, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	kafkaMsg := message.NewMessage(uuid, msgJSON)
+	if err := m.KafkaPublisher.Publish(topic, kafkaMsg); err != nil {
+		return fmt.Errorf("failed on publish message topic %s : %v", topic, err)
+	}
+
+	return nil
+}

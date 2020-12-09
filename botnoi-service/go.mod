@@ -2,6 +2,9 @@ module github.com/Planxnx/message-processing-api/botnoi-service
 
 go 1.14
 
+replace github.com/Planxnx/message-processing-api/message-schema => ../message-schema
+
+
 require (
 	github.com/Planxnx/message-processing-api/message-schema v0.0.0-20201119085137-32a2c81d2015
 	github.com/ThreeDotsLabs/watermill v1.1.1

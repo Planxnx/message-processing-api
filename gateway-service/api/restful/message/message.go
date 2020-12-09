@@ -1,25 +1,29 @@
 package message
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/gofiber/fiber/v2"
 
-	"github.com/Planxnx/message-processing-api/gateway-service/model"
-
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
+	"github.com/Planxnx/message-processing-api/gateway-service/model"
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 )
 
 type MessageHandler struct {
-	MessageUsecase *messageusecase.MessageUsecase
+	MessageUsecase  *messageusecase.MessageUsecase
+	KafkaSubscriber *kafka.Subscriber
 }
 
-func New(m *messageusecase.MessageUsecase) *MessageHandler {
+func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber) *MessageHandler {
 	return &MessageHandler{
-		MessageUsecase: m,
+		MessageUsecase:  m,
+		KafkaSubscriber: sub,
 	}
 }
 
@@ -49,5 +53,49 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 		Data: model.MessageResponseData{
 			MessageRef: messageRef,
 		},
+	})
+}
+
+func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
+
+	providerID := c.Get("Provider-ID")
+	reqBody := &model.MessageRequest{}
+	c.BodyParser(reqBody)
+	messageRef := watermill.NewUUID()
+	callbackTopic := fmt.Sprintf("response-%v", messageRef)
+	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
+		Message:       reqBody.Message,
+		Ref1:          providerID,
+		Ref2:          messageRef,
+		Ref3:          reqBody.UserRef,
+		Owner:         "Gateway service",
+		PublishedBy:   "Gateway service",
+		PublishedAt:   time.Now(),
+		Features:      reqBody.Features,
+		Data:          reqBody.Data,
+		Type:          "newMessage",
+		CallbackFlag:  true,
+		CallbackTopic: callbackTopic,
+	})
+	if err != nil {
+		log.Printf("MainEndpoint Error: failed on emit message: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
+
+	submessage, err := m.KafkaSubscriber.Subscribe(c.Context(), callbackTopic)
+	if err != nil {
+		log.Printf("MainEndpoint Error: failed on subscribe message: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
+
+	respmessage := <-submessage
+
+	respmessage.Ack()
+	resultMsg := &messageschema.DefaultMessageFormat{}
+	json.Unmarshal(respmessage.Payload, resultMsg)
+
+	return c.Status(fiber.StatusOK).JSON(&model.Response{
+		Message: "success",
+		Data:    resultMsg.Data,
 	})
 }
