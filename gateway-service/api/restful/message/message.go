@@ -1,10 +1,13 @@
 package message
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
+
+	kafapkg "github.com/Planxnx/message-processing-api/gateway-service/pkg/kafka"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -57,13 +60,28 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 }
 
 func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
+	ctx, cancel := context.WithCancel(c.Context())
+	defer cancel()
+
+	kafkaSubscriber, err := kafapkg.NewSubscriber()
+	if err != nil {
+		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
+	}
+	defer kafkaSubscriber.Close()
 
 	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
 	messageRef := watermill.NewUUID()
 	callbackTopic := fmt.Sprintf("response-%v", messageRef)
-	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
+
+	submessage, err := kafkaSubscriber.Subscribe(ctx, callbackTopic)
+	if err != nil {
+		log.Printf("MainEndpoint Error: failed on subscribe message: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
+
+	err = m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
 		Message:       reqBody.Message,
 		Ref1:          providerID,
 		Ref2:          messageRef,
@@ -82,17 +100,15 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 
-	submessage, err := m.KafkaSubscriber.Subscribe(c.Context(), callbackTopic)
-	if err != nil {
-		log.Printf("MainEndpoint Error: failed on subscribe message: %v", err)
-		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
-	}
-
 	respmessage := <-submessage
-
 	respmessage.Ack()
+
 	resultMsg := &messageschema.DefaultMessageFormat{}
 	json.Unmarshal(respmessage.Payload, resultMsg)
+
+	if resultMsg.Error != "" {
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
 
 	return c.Status(fiber.StatusOK).JSON(&model.Response{
 		Message: "success",

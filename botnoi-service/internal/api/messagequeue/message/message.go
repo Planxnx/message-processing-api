@@ -26,6 +26,7 @@ func New(messageUsecase *messageusecase.MessageUsecase, botnoiUsecase *botnoiuse
 }
 
 func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
+	defer msg.Ack()
 	resultMsg := &messageSchema.DefaultMessageFormat{}
 	json.Unmarshal(msg.Payload, resultMsg)
 
@@ -35,48 +36,51 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 
 	replyMessage, err := m.botnoiUsecase.ChitChatMessage(resultMsg.Message)
 	if err != nil {
-		log.Printf("ChitchatHandler Error: failed on chitchat msg: %v", err)
-		return err
-	}
-
-	if resultMsg.CallbackFlag {
-		err = m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, &messageschema.DefaultMessageFormat{
+		replymessage := &messageschema.DefaultMessageFormat{
 			Ref1:        resultMsg.Ref1,
 			Ref2:        resultMsg.Ref2,
 			Ref3:        resultMsg.Ref3,
-			Owner:       "Gateway service",
+			Owner:       resultMsg.Owner,
 			PublishedBy: "Botnoi service",
 			PublishedAt: time.Now(),
-			Data: map[string]interface{}{
-				"message": replyMessage,
-			},
-			Type: "replyMessage",
-		})
-		if err != nil {
-			log.Printf("ChitchatHandler Error: failed on emit message: %v", err)
-			return err
+			Type:        "replyMessage",
+			Error:       err.Error(),
 		}
-		log.Printf("OK(specifi topic)!!!!!!!!")
-		return nil
+		if resultMsg.CallbackFlag {
+			m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
+		} else {
+			m.messageUsecase.EmitReply(watermill.NewUUID(), replymessage)
+		}
+		log.Printf("ChitchatHandler Error: failed on chitchat msg: %v", err)
+		return err
 	}
-
-	err = m.messageUsecase.EmitReply(watermill.NewUUID(), &messageschema.DefaultMessageFormat{
+	replymessage := &messageschema.DefaultMessageFormat{
 		Ref1:        resultMsg.Ref1,
 		Ref2:        resultMsg.Ref2,
 		Ref3:        resultMsg.Ref3,
-		Owner:       "Gateway service",
+		Owner:       resultMsg.Owner,
 		PublishedBy: "Botnoi service",
 		PublishedAt: time.Now(),
 		Data: map[string]interface{}{
 			"message": replyMessage,
 		},
 		Type: "replyMessage",
-	})
+	}
+
+	log.Println("Replied !!")
+	if resultMsg.CallbackFlag {
+		err = m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
+		if err != nil {
+			log.Printf("ChitchatHandler Error: failed on emit message: %v", err)
+			return err
+		}
+		return nil
+	}
+	err = m.messageUsecase.EmitReply(watermill.NewUUID(), replymessage)
 	if err != nil {
 		log.Printf("ChitchatHandler Error: failed on emit message: %v", err)
 		return err
 	}
 
-	log.Printf("OK!!!!!!!!")
 	return nil
 }

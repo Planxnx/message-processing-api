@@ -15,6 +15,7 @@ type DefaultMessageFormat struct {
 	Type          string                 `json:"type"`          //message type eg. reply message, notification
 	CallbackFlag  bool                   `json:"callbackFlag"`  //specific callback topic
 	CallbackTopic string                 `json:"callbackTopic"` //specific callback topic
+	Error         string                 `json:"error"`
 }
 
 const (
