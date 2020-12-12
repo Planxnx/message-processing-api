@@ -34,6 +34,11 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 		return nil
 	}
 
+	//validate support mode 
+	if resultMsg.ExcuteMode != messageSchema.SynchronousMode && resultMsg.ExcuteMode != messageSchema.AsynchronousMode {
+		return nil
+	} 
+
 	replyMessage, err := m.botnoiUsecase.ChitChatMessage(resultMsg.Message)
 	if err != nil {
 		replymessage := &messageschema.DefaultMessageFormat{

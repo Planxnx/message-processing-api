@@ -22,8 +22,8 @@ type DefaultMessageFormat struct {
 type ExecuteMode string
 
 const (
-	SynchronousMode  ExecuteMode = "SYNC"
-	AsynchronousMode ExecuteMode = "ASYNC"
+	SynchronousMode  ExecuteMode = "Synchronous"
+	AsynchronousMode ExecuteMode = "Asynchronous"
 )
 
 const (
