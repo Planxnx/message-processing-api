@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"log"
+	"time"
 
 	"encoding/base64"
 
@@ -44,6 +45,10 @@ func (pU *ProviderUsercase) CreateNewProvider(ctx context.Context, providerData 
 	token := pU.getNewToken()
 	//TODO: hash token with secret
 	providerData.Token = token
+
+	providerData.CreatedAt = time.Now()
+	providerData.UpdatedAt = providerData.CreatedAt
+
 	_, err := pU.ProviderCollection.InsertOne(ctx, providerData)
 	if err != nil {
 		return nil, err

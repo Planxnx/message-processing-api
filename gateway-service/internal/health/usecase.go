@@ -3,6 +3,7 @@ package health
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/qiniu/qmgo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -35,6 +36,7 @@ func (pU *HealthUsercase) GetHealthByFeatureAndServiceName(ctx context.Context, 
 }
 
 func (pU *HealthUsercase) UpsertHealthData(ctx context.Context, healthData *HealthData) error {
+	healthData.LastCheckedAt = time.Now()
 	_, err := pU.healthCollection.Upsert(ctx,
 		bson.M{
 			"feature":     healthData.Feature,
@@ -53,7 +55,7 @@ func (pU *HealthUsercase) createHealthDataLog(ctx context.Context, healthData *H
 		Description: healthData.Description,
 		ExecuteMode: healthData.ExecuteMode,
 		ServiceName: healthData.ServiceName,
-		// CheckedAt:   healthData.LastCheckedAt,
+		CheckedAt:   healthData.LastCheckedAt,
 	})
 	if err != nil {
 		return err
