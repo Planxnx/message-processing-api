@@ -5,8 +5,8 @@
 			"path": "alarm-service"
 		},
 		{
-			"name": "service/botnoi",
-			"path": "botnoi-service"
+			"name": "service/external-caller",
+			"path": "external-caller-service"
 		},
 		{
 			"name": "service/gateway",

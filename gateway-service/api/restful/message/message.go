@@ -92,7 +92,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 		Features:      reqBody.Features,
 		Data:          reqBody.Data,
 		Type:          "newMessage",
-		CallbackFlag:  true,
+		ExcuteMode:    messageschema.SynchronousMode,
 		CallbackTopic: callbackTopic,
 	})
 	if err != nil {

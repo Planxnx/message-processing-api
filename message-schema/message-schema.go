@@ -9,14 +9,22 @@ type DefaultMessageFormat struct {
 	Ref3          string                 `json:"ref3"`  //end-user reference
 	Owner         string                 `json:"owner"` //service reference
 	PublishedBy   string                 `json:"publishedBy"`
-	PublishedAt   time.Time              `json:"publishedAt"`   //messageQueue published time
-	Features      map[string]bool        `json:"features"`      //Feature this message will uses next
-	Data          map[string]interface{} `json:"data"`          //attachment
-	Type          string                 `json:"type"`          //message type eg. reply message, notification
-	CallbackFlag  bool                   `json:"callbackFlag"`  //specific callback topic
-	CallbackTopic string                 `json:"callbackTopic"` //specific callback topic
+	PublishedAt   time.Time              `json:"publishedAt"` //messageQueue published time
+	Features      map[string]bool        `json:"features"`    //Feature this message will uses next
+	Data          map[string]interface{} `json:"data"`        //attachment
+	Type          string                 `json:"type"`        //message type eg. reply message, notification
+	ExcuteMode    ExecuteMode            `json:"excuteMode"`
+	CallbackTopic string                 `json:"callbackTopic"` //specific callback topic for
 	Error         string                 `json:"error"`
 }
+
+//ExecuteMode is execution mode async or sync
+type ExecuteMode string
+
+const (
+	SynchronousMode  ExecuteMode = "SYNC"
+	AsynchronousMode ExecuteMode = "ASYNC"
+)
 
 const (
 	CommonMessage   string = "commonMessage"

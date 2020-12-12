@@ -3,7 +3,7 @@ package messagequeue
 import (
 	"time"
 
-	messagehandler "github.com/Planxnx/message-processing-api/botnoi-service/internal/api/messagequeue/message"
+	messagehandler "github.com/Planxnx/message-processing-api/external-caller-service/internal/api/messagequeue/message"
 	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"

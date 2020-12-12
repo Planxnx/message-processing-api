@@ -6,7 +6,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/Planxnx/message-processing-api/botnoi-service/internal/botnoi"
+	"github.com/Planxnx/message-processing-api/external-caller-service/internal/botnoi"
 )
 
 type chitchatHandler struct {

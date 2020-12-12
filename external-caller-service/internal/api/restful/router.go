@@ -1,8 +1,8 @@
 package restful
 
 import (
-	"github.com/Planxnx/message-processing-api/botnoi-service/internal/api/restful/chitchat"
-	"github.com/Planxnx/message-processing-api/botnoi-service/internal/botnoi"
+	"github.com/Planxnx/message-processing-api/external-caller-service/internal/api/restful/chitchat"
+	"github.com/Planxnx/message-processing-api/external-caller-service/internal/botnoi"
 	"github.com/buaazp/fasthttprouter"
 )
 

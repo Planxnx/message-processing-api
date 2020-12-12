@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	botnoiusecase "github.com/Planxnx/message-processing-api/botnoi-service/internal/botnoi"
-	messageusecase "github.com/Planxnx/message-processing-api/botnoi-service/internal/message"
+	botnoiusecase "github.com/Planxnx/message-processing-api/external-caller-service/internal/botnoi"
+	messageusecase "github.com/Planxnx/message-processing-api/external-caller-service/internal/message"
 	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
@@ -46,7 +46,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 			Type:        "replyMessage",
 			Error:       err.Error(),
 		}
-		if resultMsg.CallbackFlag {
+		if resultMsg.ExcuteMode == messageSchema.SynchronousMode {
 			m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
 		} else {
 			m.messageUsecase.EmitReply(watermill.NewUUID(), replymessage)
@@ -68,7 +68,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 	}
 
 	log.Println("Replied !!")
-	if resultMsg.CallbackFlag {
+	if resultMsg.ExcuteMode == messageSchema.SynchronousMode {
 		err = m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
 		if err != nil {
 			log.Printf("ChitchatHandler Error: failed on emit message: %v", err)
