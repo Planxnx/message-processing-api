@@ -13,9 +13,11 @@ import (
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/message"
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/provider"
 
+	mqhealthcheck "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/healthcheck"
 	mqmessage "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/message"
 
 	callbackusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/callback"
+	healthusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/health"
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
 	providerusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/provider"
 
@@ -61,17 +63,22 @@ func main() {
 	}
 	messageProcssingAPIDatabase := mongodbClient.Database("message-processing-api")
 	providerCollection := messageProcssingAPIDatabase.Collection("provider")
+	healthCollection := messageProcssingAPIDatabase.Collection("health")
+	healthLogCollection := messageProcssingAPIDatabase.Collection("health_log")
 
 	//Initial Usecase Dependency
 	messageUsecase := messageusecase.New(kafkaNewPublisher)
 	providerUsecase := providerusecase.New(providerCollection)
+	healthUsecase := healthusecase.New(healthCollection, healthLogCollection)
 	callbackUsecase := callbackusecase.New()
 
 	//Initial MessageQueue Dependency
 	messageMQHandler := mqmessage.New(messageUsecase, providerUsecase, callbackUsecase)
+	healthCheckMQHandler := mqhealthcheck.New(healthUsecase)
 	messageQueueouterDependency := &messagequeue.RouterDependency{
-		KafkaSubscriber: kafkaSubscriber,
-		MessageHandler:  messageMQHandler,
+		KafkaSubscriber:    kafkaSubscriber,
+		MessageHandler:     messageMQHandler,
+		HealthCheckHandler: healthCheckMQHandler,
 	}
 	messagequeueRouter, err := messageQueueouterDependency.InitialRouter()
 	if err != nil {

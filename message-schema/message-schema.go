@@ -27,6 +27,7 @@ const (
 )
 
 const (
+	HealthCheck     string = "healthCheck"
 	CommonMessage   string = "commonMessage"
 	ReplyMessage    string = "replyMessage"
 	Notification    string = "notification"

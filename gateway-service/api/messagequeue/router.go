@@ -3,8 +3,10 @@ package messagequeue
 import (
 	"time"
 
+	healthcheckhandler "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/healthcheck"
 	messagehandler "github.com/Planxnx/message-processing-api/gateway-service/api/messagequeue/message"
-	messageSchema "github.com/Planxnx/message-processing-api/message-schema"
+	messageschema "github.com/Planxnx/message-processing-api/message-schema"
+
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -17,8 +19,9 @@ var (
 )
 
 type RouterDependency struct {
-	KafkaSubscriber *kafka.Subscriber
-	MessageHandler  *messagehandler.MessageHandler
+	KafkaSubscriber    *kafka.Subscriber
+	MessageHandler     *messagehandler.MessageHandler
+	HealthCheckHandler *healthcheckhandler.HealthCheckHandler
 }
 
 func (r *RouterDependency) InitialRouter() (*message.Router, error) {
@@ -38,6 +41,7 @@ func (r *RouterDependency) InitialRouter() (*message.Router, error) {
 		middleware.Recoverer,
 	)
 
-	router.AddNoPublisherHandler("ReplyMessageHandler", messageSchema.ReplyMessage, r.KafkaSubscriber, r.MessageHandler.ReplyMessage)
+	router.AddNoPublisherHandler("HealthCheckHandler", messageschema.HealthCheck, r.KafkaSubscriber, r.HealthCheckHandler.HealthCheck)
+	router.AddNoPublisherHandler("ReplyMessageHandler", messageschema.ReplyMessage, r.KafkaSubscriber, r.MessageHandler.ReplyMessage)
 	return router, nil
 }
