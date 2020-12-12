@@ -41,7 +41,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 			Ref2:        resultMsg.Ref2,
 			Ref3:        resultMsg.Ref3,
 			Owner:       resultMsg.Owner,
-			PublishedBy: "Botnoi service",
+			PublishedBy: "External Caller service",
 			PublishedAt: time.Now(),
 			Type:        "replyMessage",
 			Error:       err.Error(),
@@ -59,7 +59,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 		Ref2:        resultMsg.Ref2,
 		Ref3:        resultMsg.Ref3,
 		Owner:       resultMsg.Owner,
-		PublishedBy: "Botnoi service",
+		PublishedBy: "External Caller service",
 		PublishedAt: time.Now(),
 		Data: map[string]interface{}{
 			"message": replyMessage,
