@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
 )
 
@@ -39,10 +40,10 @@ func (b *BotnoiService) request(endpoint string, body interface{}) (*fasthttp.Re
 	resp := fasthttp.AcquireResponse()
 
 	if err := fasthttp.Do(req, resp); err != nil {
-		return nil, fmt.Errorf("botnoi request error: failed on send request: %v", err)
+		return nil, errors.Errorf("botnoi request error: failed on send request: %v", err)
 	}
 	if resp.StatusCode() != fasthttp.StatusOK {
-		return resp, fmt.Errorf("botnoi request error:expected status code %d but  got %d", fasthttp.StatusOK, resp.StatusCode())
+		return resp, errors.Errorf("botnoi request error:expected status code %d but  got %d", fasthttp.StatusOK, resp.StatusCode())
 	}
 	return resp, nil
 }

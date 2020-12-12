@@ -20,9 +20,9 @@ func NewPubliser() (*kafka.Publisher, error) {
 
 func NewSubscriber() (*kafka.Subscriber, error) {
 	config := kafka.SubscriberConfig{
-		Brokers:       []string{kafkaHost},
-		Unmarshaler:   kafka.DefaultMarshaler{},
-		ConsumerGroup: "main",
+		Brokers:     []string{kafkaHost},
+		Unmarshaler: kafka.DefaultMarshaler{},
+		// ConsumerGroup: "main",
 	}
 	return kafka.NewSubscriber(config, logger)
 }

@@ -81,7 +81,7 @@ func main() {
 	//Initial Restful Dependency
 	middlewareHandler := middleware.New(providerUsecase)
 	healthHandler := health.New()
-	messageHandler := message.New(messageUsecase)
+	messageHandler := message.New(messageUsecase, kafkaSubscriber)
 	provderHandler := provider.New(providerUsecase)
 	routerDependency := &restful.RouterDependency{
 		HealthHandler:  healthHandler,

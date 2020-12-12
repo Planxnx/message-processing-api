@@ -36,4 +36,6 @@ func (r *RouterDependency) InitialRouter() {
 	authRoute := v1.Group("/", r.Middleware.AuthenticationMiddleware)
 
 	authRoute.Post("/", r.MessageHandler.MainEndpoint)
+
+	authRoute.Post("/sync", r.MessageHandler.SynchronousEndpoint)
 }

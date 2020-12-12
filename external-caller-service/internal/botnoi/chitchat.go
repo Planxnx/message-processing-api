@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
 )
 
@@ -29,12 +30,12 @@ func (s *BotnoiService) ChitChatMessage(message string) (string, error) {
 	resp, err := s.request(endpoint, nil)
 	defer fasthttp.ReleaseResponse(resp)
 	if err != nil {
-		return "", err
+		return "", errors.WithStack(err)
 	}
 
 	responseBody := &ChitChatResponse{}
 	if err := json.Unmarshal(resp.Body(), responseBody); err != nil {
-		return "", err
+		return "", errors.WithStack(err)
 	}
 
 	return responseBody.Reply, nil

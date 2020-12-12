@@ -10,8 +10,9 @@ import (
 
 // Config ...
 type Config struct {
-	Restful RestfulConfig `mapstructure:"restful"`
-	Botnoi  BotnoiConfig  `mapstructure:"botnoi"`
+	ServiceName string        `mapstructure:"service_name"`
+	Restful     RestfulConfig `mapstructure:"restful"`
+	Botnoi      BotnoiConfig  `mapstructure:"botnoi"`
 }
 
 // RestfulConfig ...
