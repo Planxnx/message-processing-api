@@ -24,6 +24,7 @@ type RouterDependency struct {
 func (r *RouterDependency) InitialRouter() {
 
 	r.App.Get("/health", r.HealthHandler.CheckHealth)
+	r.App.Get("/health/:service/:feature", r.HealthHandler.CheckHealthByFeatureAndService)
 
 	v1 := r.App.Group("/v1")
 

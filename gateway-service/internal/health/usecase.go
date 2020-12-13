@@ -35,6 +35,17 @@ func (pU *HealthUsercase) GetHealthByFeatureAndServiceName(ctx context.Context, 
 	return healthData, nil
 }
 
+func (pU *HealthUsercase) GetAllHealths(ctx context.Context) ([]*HealthData, error) {
+	healthData := &[]*HealthData{}
+	err := pU.healthCollection.Find(ctx, bson.M{}).All(healthData)
+	if err != nil {
+		return nil, err
+	}
+	log.Println(healthData)
+
+	return *healthData, nil
+}
+
 func (pU *HealthUsercase) UpsertHealthData(ctx context.Context, healthData *HealthData) error {
 	healthData.LastCheckedAt = time.Now()
 	_, err := pU.healthCollection.Upsert(ctx,
