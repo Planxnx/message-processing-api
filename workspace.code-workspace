@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"name": "service/alarm",
+			"path": "alarm-service"
+		},
+		{
+			"name": "service/external-caller",
+			"path": "external-caller-service"
+		},
+		{
+			"name": "service/gateway",
+			"path": "gateway-service"
+		},
+		{
+			"name": "service/scheduler",
+			"path": "scheduler-service"
+		},
+		{
+			"name": "service/example",
+			"path": "example-provider-service"
+		},
+		{
+			"name": "message-schema",
+			"path": "message-schema"
+		},
+		{
+			"name": "root",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: api-gateway-ingress
+  labels:
+    app: ingress
+  uid: 1be28b35-ad4e-42ef-b547-f9fba531f473
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+    - host: api.planxnx.usw1.kubesail.io
+      http:
+        paths:
+          - backend:
+              serviceName: api-gateway-service
+              servicePort: 4000
+  tls:
+    - hosts:
+        - api.planxnx.usw1.kubesail.io
+      secretName: api-gateway-deployment-ingress
