@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Planxnx/message-processing-api/external-caller-service/internal/lottery"
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -90,31 +91,44 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 	foundReward := []*CheckLatestLotteryData{}
 
 	var wg sync.WaitGroup
+	wg.Add(2)
 	go func() {
-		wg.Add(1)
+		defer wg.Done()
+		var prizeWg sync.WaitGroup
 		for _, prize := range latestLotto.Prizes {
-			i := sort.SearchStrings(prize.Number, requestData.Number)
-			if prize.Number[i] == requestData.Number {
-				foundReward = append(foundReward, &CheckLatestLotteryData{
-					Name:   prize.Name,
-					Reward: prize.Reward,
-					Number: prize.Number[i],
-				})
-			}
+			prizeWg.Add(1)
+			go func(p lottery.LatestLotteryPrizes) {
+				defer prizeWg.Done()
+				i := sort.SearchStrings(p.Number, requestData.Number)
+				if p.Number[i] == requestData.Number {
+					foundReward = append(foundReward, &CheckLatestLotteryData{
+						Name:   p.Name,
+						Reward: p.Reward,
+						Number: p.Number[i],
+					})
+				}
+			}(prize)
 		}
+		prizeWg.Wait()
 	}()
 	go func() {
-		wg.Add(1)
+		defer wg.Done()
+		var runningNumberWg sync.WaitGroup
 		for _, runningNumbers := range latestLotto.RunningNumbers {
-			i := sort.SearchStrings(runningNumbers.Number, requestData.Number)
-			if runningNumbers.Number[i] == requestData.Number {
-				foundReward = append(foundReward, &CheckLatestLotteryData{
-					Name:   runningNumbers.Name,
-					Reward: runningNumbers.Reward,
-					Number: runningNumbers.Number[i],
-				})
-			}
+			runningNumberWg.Add(1)
+			go func(p lottery.LatestLotteryRunningNumbers) {
+				defer runningNumberWg.Done()
+				i := sort.SearchStrings(p.Number, requestData.Number)
+				if p.Number[i] == requestData.Number {
+					foundReward = append(foundReward, &CheckLatestLotteryData{
+						Name:   p.Name,
+						Reward: p.Reward,
+						Number: p.Number[i],
+					})
+				}
+			}(runningNumbers)
 		}
+		runningNumberWg.Wait()
 	}()
 	wg.Wait()
 
