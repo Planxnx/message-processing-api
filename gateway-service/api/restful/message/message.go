@@ -113,6 +113,10 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 	proto.Unmarshal(respmessage.Payload, resultMsg)
 
 	if resultMsg.Error != "" {
+		return fiber.NewError(fiber.StatusBadRequest, resultMsg.Error)
+	}
+
+	if resultMsg.ErrorInternal != "" {
 		log.Printf("SynchronousEndpoint Error: failed on result: %v", resultMsg.Error)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}

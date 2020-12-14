@@ -21,7 +21,8 @@ message DefaultMessage {
     string type =  10; //message type eg. reply message, notification
     ExecuteMode excuteMode =  11;
     string callbackTopic = 12;
-    string error =  13;
+    string errorInternal =  13;
+    string error =  14;
 }
 
 message HealthCheckMessage {
