@@ -38,6 +38,8 @@ func (r *RouterDependency) InitialRouter() (*message.Router, error) {
 		middleware.Recoverer,
 	)
 
-	router.AddNoPublisherHandler("ReplyMessageHandler", messageSchema.CommonMessageTopic, r.KafkaSubscriber, r.MessageHandler.ChitchatHandler)
+	router.AddNoPublisherHandler("ChitChatHandler", messageSchema.CommonMessageTopic, r.KafkaSubscriber, r.MessageHandler.ChitchatHandler)
+	router.AddNoPublisherHandler("CheckLatestLotteryHandler", messageSchema.CommonMessageTopic, r.KafkaSubscriber, r.MessageHandler.CheckLatestLotteryHandler)
+
 	return router, nil
 }

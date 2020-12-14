@@ -13,6 +13,7 @@ type Config struct {
 	ServiceName string        `mapstructure:"service_name"`
 	Restful     RestfulConfig `mapstructure:"restful"`
 	Botnoi      BotnoiConfig  `mapstructure:"botnoi"`
+	Lottery     LotteryConfig `mapstructure:"lottery"`
 }
 
 // RestfulConfig ...
@@ -24,6 +25,11 @@ type RestfulConfig struct {
 type BotnoiConfig struct {
 	Address string `mapstructure:"address"`
 	Token   string `mapstructure:"token"`
+}
+
+// LotteryConfig ...
+type LotteryConfig struct {
+	Address string `mapstructure:"address"`
 }
 
 var config *Config

@@ -6,3 +6,6 @@ restful:
 botnoi:
   address: https://openapi.botnoi.ai/service-api/
   token: YOUR_TOKEN
+
+lottery:
+  address: https://lotto.api.rayriffy.com/

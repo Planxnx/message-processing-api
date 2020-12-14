@@ -14,6 +14,7 @@ import (
 	"github.com/Planxnx/message-processing-api/external-caller-service/internal/api/messagequeue"
 	mqmessage "github.com/Planxnx/message-processing-api/external-caller-service/internal/api/messagequeue/message"
 	"github.com/Planxnx/message-processing-api/external-caller-service/internal/botnoi"
+	"github.com/Planxnx/message-processing-api/external-caller-service/internal/lottery"
 	"github.com/Planxnx/message-processing-api/external-caller-service/internal/message"
 
 	kafapkg "github.com/Planxnx/message-processing-api/external-caller-service/pkg/kafka"
@@ -38,8 +39,9 @@ func main() {
 	//Initial Usecase
 	botnoiUsecase := botnoi.New(configs.Botnoi.Address, configs.Botnoi.Token)
 	messageUsecase := message.NewUsecase(kafkaNewPublisher)
+	lottoUsecase := lottery.New(configs.Lottery.Address)
 
-	messageMQHandler := mqmessage.New(messageUsecase, botnoiUsecase)
+	messageMQHandler := mqmessage.New(messageUsecase, botnoiUsecase, lottoUsecase)
 
 	messageQueueRouterDependency := &messagequeue.RouterDependency{
 		KafkaSubscriber: kafkaSubscriber,
@@ -80,9 +82,23 @@ func healthCheck(serviceName string, kafkaPublisher *kafka.Publisher) {
 			}
 		}()
 
-		//Etc.. HealthCheck
+		//CheclLatestLottery HealthCheck
 		go func() {
-			//implement this
+			lotto := &messageschema.HealthCheckMessage{
+				Feature:     "Check-Latest-Lottery",
+				Description: "ตรวจผลสลากกินแบ่งรัฐบาล งวดล่าสุด",
+				ExecuteMode: []messageschema.ExecuteMode{
+					messageschema.ExecuteMode_Synchronous,
+				},
+				ServiceName: serviceName,
+			}
+			chitchatByte, err := proto.Marshal(lotto)
+			if err != nil {
+				log.Println("health check error: can't marshal lotto message")
+			}
+			if err := kafkaPublisher.Publish(messageschema.HealthCheckTopic, watermillmessage.NewMessage(watermill.NewShortUUID(), chitchatByte)); err != nil {
+				log.Printf("health check error: failed on publish lotto message: %v\n", err)
+			}
 		}()
 	}
 
