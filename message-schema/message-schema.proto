@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package messagechema;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = ".;messageschema";
+
+//generate command:$  protoc --go_out=./ ./message-schema.proto
+
+message DefaultMessage {
+    string message = 1;
+    string ref1 =  2; //client reference
+    string ref2 =  3; //message reference
+    string ref3 =  4; //end-user reference
+    string owner =  5; //service reference
+    string publishedBy =  6;
+    google.protobuf.Timestamp publishedAt =  7;
+    string feature =  8;
+    bytes data =  9; //attachment
+    string type =  10; //message type eg. reply message, notification
+    ExecuteMode excuteMode =  11;
+    string callbackTopic = 12;
+    string error =  13;
+}
+
+message HealthCheckMessage {
+    string feature = 1;
+    string description = 2;
+    repeated ExecuteMode executeMode = 3;
+    string serviceName = 4;
+}
+
+
+enum ExecuteMode {
+    Asynchronous = 0;
+    Synchronous = 1;
+}
+

@@ -2,9 +2,9 @@ package healthcheck
 
 import (
 	"context"
-	"encoding/json"
 
 	healthusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/health"
+	"google.golang.org/protobuf/proto"
 
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 
@@ -23,8 +23,8 @@ func New(h *healthusecase.HealthUsercase) *HealthCheckHandler {
 
 func (h *HealthCheckHandler) HealthCheck(msg *message.Message) error {
 	ctx := context.Background()
-	resultMsg := &messageschema.HealthCheckMessageFormat{}
-	json.Unmarshal(msg.Payload, resultMsg)
+	resultMsg := &messageschema.HealthCheckMessage{}
+	proto.Unmarshal(msg.Payload, resultMsg)
 
 	err := h.healthUsercase.UpsertHealthData(ctx, &healthusecase.HealthData{
 		Feature:     resultMsg.Feature,
@@ -40,10 +40,10 @@ func (h *HealthCheckHandler) HealthCheck(msg *message.Message) error {
 	return nil
 }
 
-func (*HealthCheckHandler) mapExcuteModeToString(execMode []messageschema.ExecuteMode) []string {
-	execModeString := []string{}
-	for _, v := range execMode {
-		execModeString = append(execModeString, string(v))
+func (*HealthCheckHandler) mapExcuteModeToString(execModes []messageschema.ExecuteMode) []string {
+	execModesString := []string{}
+	for _, execMode := range execModes {
+		execModesString = append(execModesString, execMode.String())
 	}
-	return execModeString
+	return execModesString
 }

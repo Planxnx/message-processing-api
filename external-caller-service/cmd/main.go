@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 
 	"github.com/Planxnx/message-processing-api/external-caller-service/config"
@@ -10,6 +9,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	watermillmessage "github.com/ThreeDotsLabs/watermill/message"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Planxnx/message-processing-api/external-caller-service/internal/api/messagequeue"
 	mqmessage "github.com/Planxnx/message-processing-api/external-caller-service/internal/api/messagequeue/message"
@@ -62,20 +62,20 @@ func healthCheck(serviceName string, kafkaPublisher *kafka.Publisher) {
 	healthCheckCmd := func() {
 		//Chitchat HealthCheck
 		go func() {
-			chitchat := messageschema.HealthCheckMessageFormat{
+			chitchat := &messageschema.HealthCheckMessage{
 				Feature:     "Chitchat",
 				Description: "แชทบอทคุยเล่นขำขัน",
 				ExecuteMode: []messageschema.ExecuteMode{
-					messageschema.AsynchronousMode,
-					messageschema.SynchronousMode,
+					messageschema.ExecuteMode_Asynchronous,
+					messageschema.ExecuteMode_Synchronous,
 				},
 				ServiceName: serviceName,
 			}
-			chitchatJSON, err := json.Marshal(chitchat)
+			chitchatByte, err := proto.Marshal(chitchat)
 			if err != nil {
 				log.Println("health check error: can't marshal chitchat message")
 			}
-			if err := kafkaPublisher.Publish(messageschema.HealthCheck, watermillmessage.NewMessage(watermill.NewShortUUID(), chitchatJSON)); err != nil {
+			if err := kafkaPublisher.Publish(messageschema.HealthCheckTopic, watermillmessage.NewMessage(watermill.NewShortUUID(), chitchatByte)); err != nil {
 				log.Printf("health check error: failed on publish chitchat message: %v\n", err)
 			}
 		}()

@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	kafapkg "github.com/Planxnx/message-processing-api/gateway-service/pkg/kafka"
+	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -35,16 +36,19 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
 	messageRef := watermill.NewUUID()
-	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
+
+	dataByte, _ := json.Marshal(reqBody.Data)
+
+	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessage{
 		Message:     reqBody.Message,
 		Ref1:        providerID,
 		Ref2:        messageRef,
 		Ref3:        reqBody.UserRef,
 		Owner:       "Gateway service",
 		PublishedBy: "Gateway service",
-		PublishedAt: time.Now(),
-		Features:    reqBody.Features,
-		Data:        reqBody.Data,
+		PublishedAt: ptypes.TimestampNow(),
+		Feature:     reqBody.Feature,
+		Data:        dataByte,
 		Type:        "newMessage",
 	})
 	if err != nil {
@@ -65,53 +69,59 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 
 	kafkaSubscriber, err := kafapkg.NewSubscriber()
 	if err != nil {
-		log.Fatalf("main Error: failed on create kafka subscriber: %v", err)
+		log.Fatalf("SynchronousEndpoint: failed on create kafka subscriber: %v", err)
 	}
 	defer kafkaSubscriber.Close()
 
 	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
-	messageRef := watermill.NewUUID()
+	messageRef := watermill.NewShortUUID()
 	callbackTopic := fmt.Sprintf("response-%v", messageRef)
 
-	submessage, err := kafkaSubscriber.Subscribe(ctx, callbackTopic)
-	if err != nil {
-		log.Printf("MainEndpoint Error: failed on subscribe message: %v", err)
-		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
-	}
+	dataByte, _ := json.Marshal(reqBody.Data)
 
-	err = m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessageFormat{
+	err = m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessage{
 		Message:       reqBody.Message,
 		Ref1:          providerID,
 		Ref2:          messageRef,
 		Ref3:          reqBody.UserRef,
 		Owner:         "Gateway service",
 		PublishedBy:   "Gateway service",
-		PublishedAt:   time.Now(),
-		Features:      reqBody.Features,
-		Data:          reqBody.Data,
+		PublishedAt:   ptypes.TimestampNow(),
+		Feature:       reqBody.Feature,
+		Data:          dataByte,
 		Type:          "newMessage",
-		ExcuteMode:    messageschema.SynchronousMode,
+		ExcuteMode:    messageschema.ExecuteMode_Synchronous,
 		CallbackTopic: callbackTopic,
 	})
 	if err != nil {
-		log.Printf("MainEndpoint Error: failed on emit message: %v", err)
+		log.Printf("SynchronousEndpoint Error: failed on emit message: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
+
+	submessage, err := kafkaSubscriber.Subscribe(ctx, callbackTopic)
+	if err != nil {
+		log.Printf("SynchronousEndpoint Error: failed on subscribe message: %v", err)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 
 	respmessage := <-submessage
 	respmessage.Ack()
 
-	resultMsg := &messageschema.DefaultMessageFormat{}
-	json.Unmarshal(respmessage.Payload, resultMsg)
+	resultMsg := &messageschema.DefaultMessage{}
+	proto.Unmarshal(respmessage.Payload, resultMsg)
 
 	if resultMsg.Error != "" {
+		log.Printf("SynchronousEndpoint Error: failed on result: %v", resultMsg.Error)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 
+	attachmentData := &map[string]interface{}{}
+	json.Unmarshal(resultMsg.Data, attachmentData)
+
 	return c.Status(fiber.StatusOK).JSON(&model.Response{
 		Message: "success",
-		Data:    resultMsg.Data,
+		Data:    attachmentData,
 	})
 }

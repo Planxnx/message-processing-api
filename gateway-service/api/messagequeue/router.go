@@ -41,7 +41,7 @@ func (r *RouterDependency) InitialRouter() (*message.Router, error) {
 		middleware.Recoverer,
 	)
 
-	router.AddNoPublisherHandler("HealthCheckHandler", messageschema.HealthCheck, r.KafkaSubscriber, r.HealthCheckHandler.HealthCheck)
-	router.AddNoPublisherHandler("ReplyMessageHandler", messageschema.ReplyMessage, r.KafkaSubscriber, r.MessageHandler.ReplyMessage)
+	router.AddNoPublisherHandler("HealthCheckHandler", messageschema.HealthCheckTopic, r.KafkaSubscriber, r.HealthCheckHandler.HealthCheck)
+	router.AddNoPublisherHandler("ReplyMessageHandler", messageschema.ReplyMessageTopic, r.KafkaSubscriber, r.MessageHandler.ReplyMessage)
 	return router, nil
 }

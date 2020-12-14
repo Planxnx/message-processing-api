@@ -1,12 +1,12 @@
 package message
 
 import (
-	"encoding/json"
 	"fmt"
 
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"google.golang.org/protobuf/proto"
 )
 
 type MessageUsecase struct {
@@ -19,27 +19,41 @@ func New(k *kafka.Publisher) *MessageUsecase {
 	}
 }
 
-func (m *MessageUsecase) EmitCommon(uuid string, msg *messageschema.DefaultMessageFormat) error {
-	msgJSON, err := json.Marshal(msg)
+func (m *MessageUsecase) EmitCommon(uuid string, msg *messageschema.DefaultMessage) error {
+	msgByte, err := proto.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	kafkaMsg := message.NewMessage(uuid, msgJSON)
-	if err := m.KafkaPublisher.Publish(messageschema.CommonMessage, kafkaMsg); err != nil {
-		return fmt.Errorf("failed on publish message topic %s : %v", messageschema.CommonMessage, err)
+	kafkaMsg := message.NewMessage(uuid, msgByte)
+	if err := m.KafkaPublisher.Publish(messageschema.CommonMessageTopic, kafkaMsg); err != nil {
+		return fmt.Errorf("failed on publish message: %v", err)
 	}
 
 	return nil
 }
 
-func (m *MessageUsecase) Emit(uuid string, topic string, msg *messageschema.DefaultMessageFormat) error {
-	msgJSON, err := json.Marshal(msg)
+func (m *MessageUsecase) EmitReply(uuid string, msg *messageschema.DefaultMessage) error {
+	msgByte, err := proto.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	kafkaMsg := message.NewMessage(uuid, msgJSON)
+	kafkaMsg := message.NewMessage(uuid, msgByte)
+	if err := m.KafkaPublisher.Publish(messageschema.ReplyMessageTopic, kafkaMsg); err != nil {
+		return fmt.Errorf("failed on publish message: %v", err)
+	}
+
+	return nil
+}
+
+func (m *MessageUsecase) Emit(uuid string, topic string, msg *messageschema.DefaultMessage) error {
+	msgByte, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	kafkaMsg := message.NewMessage(uuid, msgByte)
 	if err := m.KafkaPublisher.Publish(topic, kafkaMsg); err != nil {
 		return fmt.Errorf("failed on publish message topic %s : %v", topic, err)
 	}
