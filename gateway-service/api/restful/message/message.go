@@ -7,8 +7,8 @@ import (
 	"log"
 
 	kafapkg "github.com/Planxnx/message-processing-api/gateway-service/pkg/kafka"
-	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -46,7 +46,7 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 		Ref3:        reqBody.UserRef,
 		Owner:       "Gateway service",
 		PublishedBy: "Gateway service",
-		PublishedAt: ptypes.TimestampNow(),
+		PublishedAt: timestamppb.Now(),
 		Feature:     reqBody.Feature,
 		Data:        dataByte,
 		Type:        "newMessage",
@@ -88,7 +88,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 		Ref3:          reqBody.UserRef,
 		Owner:         "Gateway service",
 		PublishedBy:   "Gateway service",
-		PublishedAt:   ptypes.TimestampNow(),
+		PublishedAt:   timestamppb.Now(),
 		Feature:       reqBody.Feature,
 		Data:          dataByte,
 		Type:          "newMessage",

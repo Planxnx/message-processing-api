@@ -6,7 +6,7 @@ import (
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type MessageUsecase struct {

@@ -10,7 +10,6 @@ require (
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.0
 	github.com/gofiber/fiber/v2 v2.0.1
 	github.com/gofiber/helmet/v2 v2.0.0
-	github.com/golang/protobuf v1.4.1
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/qiniu/qmgo v0.7.0
 	github.com/valyala/fasthttp v1.16.0

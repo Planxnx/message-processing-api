@@ -10,8 +10,8 @@ import (
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type MessageHandler struct {
@@ -53,7 +53,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 	replyMessage, err := m.botnoiUsecase.ChitChatMessage(resultMsg.Message)
 	if err != nil {
 		replymessage.Error = err.Error()
-		replymessage.PublishedAt = ptypes.TimestampNow()
+		replymessage.PublishedAt = timestamppb.Now()
 		if resultMsg.ExcuteMode == messageschema.ExecuteMode_Synchronous {
 			m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
 		} else {
@@ -68,7 +68,7 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 	})
 	if err != nil {
 		replymessage.Error = err.Error()
-		replymessage.PublishedAt = ptypes.TimestampNow()
+		replymessage.PublishedAt = timestamppb.Now()
 		if resultMsg.ExcuteMode == messageschema.ExecuteMode_Synchronous {
 			m.messageUsecase.Emit(watermill.NewUUID(), resultMsg.CallbackTopic, replymessage)
 		} else {
@@ -79,8 +79,8 @@ func (m *MessageHandler) ChitchatHandler(msg *message.Message) error {
 	}
 
 	replymessage.Data = attachmentData
-	replymessage.PublishedAt = ptypes.TimestampNow()
-	replymessage.PublishedAt = ptypes.TimestampNow()
+	replymessage.PublishedAt = timestamppb.Now()
+	replymessage.PublishedAt = timestamppb.Now()
 
 	log.Println("Replied !!")
 	if resultMsg.ExcuteMode == messageschema.ExecuteMode_Synchronous {
