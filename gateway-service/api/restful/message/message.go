@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 
 	kafapkg "github.com/Planxnx/message-processing-api/gateway-service/pkg/kafka"
 	"google.golang.org/protobuf/proto"
@@ -35,6 +36,7 @@ func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber, hu *healthusec
 	}
 }
 
+//MainEndpoint Asyncmode
 func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
@@ -44,6 +46,12 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	if featureHealth == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
 			Message: "feature is unavailable",
+		})
+	}
+	index := sort.SearchStrings(featureHealth.ExecuteMode, messageschema.ExecuteMode_Asynchronous.String())
+	if featureHealth.ExecuteMode[index] != messageschema.ExecuteMode_Asynchronous.String() {
+		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
+			Message: "asynchronous mode not support",
 		})
 	}
 
@@ -88,6 +96,20 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
+
+	featureHealth := m.healthUsercase.GetHealthMem(reqBody.Feature)
+	if featureHealth == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
+			Message: "feature is unavailable",
+		})
+	}
+	index := sort.SearchStrings(featureHealth.ExecuteMode, messageschema.ExecuteMode_Asynchronous.String())
+	if featureHealth.ExecuteMode[index] != messageschema.ExecuteMode_Synchronous.String() {
+		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
+			Message: "synchronous mode not support",
+		})
+	}
+
 	messageRef := watermill.NewShortUUID()
 	callbackTopic := fmt.Sprintf("response-%v", messageRef)
 
