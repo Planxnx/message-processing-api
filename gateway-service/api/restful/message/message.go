@@ -14,7 +14,9 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/gofiber/fiber/v2"
 
+	healthusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/health"
 	messageusecase "github.com/Planxnx/message-processing-api/gateway-service/internal/message"
+
 	"github.com/Planxnx/message-processing-api/gateway-service/model"
 	messageschema "github.com/Planxnx/message-processing-api/message-schema"
 )
@@ -22,12 +24,14 @@ import (
 type MessageHandler struct {
 	MessageUsecase  *messageusecase.MessageUsecase
 	KafkaSubscriber *kafka.Subscriber
+	healthUsercase  *healthusecase.HealthUsercase
 }
 
-func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber) *MessageHandler {
+func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber, hu *healthusecase.HealthUsercase) *MessageHandler {
 	return &MessageHandler{
 		MessageUsecase:  m,
 		KafkaSubscriber: sub,
+		healthUsercase:  hu,
 	}
 }
 
@@ -35,6 +39,14 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	providerID := c.Get("Provider-ID")
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
+
+	featureHealth := m.healthUsercase.GetHealthMem(reqBody.Feature)
+	if featureHealth == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
+			Message: "feature is unavailable",
+		})
+	}
+
 	messageRef := watermill.NewUUID()
 
 	dataByte, _ := json.Marshal(reqBody.Data)
