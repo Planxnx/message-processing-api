@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful"
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/health"
@@ -114,13 +115,34 @@ func main() {
 	}()
 
 	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-	select {
-	case <-interrupt:
-		break
-	case <-ctx.Done():
-		break
+
+	signal.Notify(
+		interrupt,
+		syscall.SIGHUP,  // kill -SIGHUP XXXX
+		syscall.SIGINT,  // kill -SIGINT XXXX or Ctrl+c
+		syscall.SIGQUIT, // kill -SIGQUIT XXXX
+		syscall.SIGTERM, // kill -SIGTERM XXXX
+	)
+	<-interrupt
+	gracefullShutdownCtx, cancelShutdown := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelShutdown()
+	if err := kafkaSubscriber.Close(); err != nil {
+		log.Printf("Shutdown kafka subscriber error: %+v\n", err)
 	}
+	if err := kafkaNewPublisher.Close(); err != nil {
+		log.Printf("Shutdown kafka publisher error: %+v\n", err)
+	}
+	if err := messagequeueRouter.Close(); err != nil {
+		log.Printf("Shutdown message queue router error: %+v\n", err)
+	}
+	if err := mongodbClient.Close(gracefullShutdownCtx); err != nil {
+		log.Printf("Shutdown mongodb client error: %+v\n", err)
+	}
+	if err := app.Shutdown(); err != nil {
+		log.Printf("Shutdown http server error: %+v\n", err)
+	}
+	log.Println("gracefully stopped server")
+
 }
 
 func defaultErrorHandler(c *fiber.Ctx, err error) error {
