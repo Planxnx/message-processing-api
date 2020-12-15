@@ -123,26 +123,32 @@ func main() {
 		syscall.SIGQUIT, // kill -SIGQUIT XXXX
 		syscall.SIGTERM, // kill -SIGTERM XXXX
 	)
+
 	<-interrupt
 	gracefullShutdownCtx, cancelShutdown := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelShutdown()
 	if err := kafkaSubscriber.Close(); err != nil {
 		log.Printf("Shutdown kafka subscriber error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown kafka subscriber success")
 	}
 	if err := kafkaNewPublisher.Close(); err != nil {
 		log.Printf("Shutdown kafka publisher error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown kafka publisher success")
 	}
+
 	if err := messagequeueRouter.Close(); err != nil {
 		log.Printf("Shutdown message queue router error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown message queue router success")
 	}
 	if err := mongodbClient.Close(gracefullShutdownCtx); err != nil {
 		log.Printf("Shutdown mongodb client error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown mongodb client success")
 	}
-	if err := app.Shutdown(); err != nil {
-		log.Printf("Shutdown http server error: %+v\n", err)
-	}
-	log.Println("gracefully stopped server")
-
+	log.Println("Gracefully stopped server")
 }
 
 func defaultErrorHandler(c *fiber.Ctx, err error) error {

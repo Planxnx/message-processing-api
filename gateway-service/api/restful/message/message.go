@@ -103,7 +103,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 			Message: "feature is unavailable",
 		})
 	}
-	index := sort.SearchStrings(featureHealth.ExecuteMode, messageschema.ExecuteMode_Asynchronous.String())
+	index := sort.SearchStrings(featureHealth.ExecuteMode, messageschema.ExecuteMode_Synchronous.String())
 	if featureHealth.ExecuteMode[index] != messageschema.ExecuteMode_Synchronous.String() {
 		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
 			Message: "synchronous mode not support",
