@@ -155,7 +155,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 	}
 
 	if resultMsg.ErrorInternal != "" {
-		log.Printf("SynchronousEndpoint Error: failed on result: %v", resultMsg.Error)
+		log.Printf("SynchronousEndpoint Error: failed on result: %v", resultMsg.ErrorInternal)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 
