@@ -46,11 +46,12 @@ func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
 
 	time.Sleep(1 * time.Second) //Add deley
 	_, err = m.callbackUsecase.Request(provider.Webhook, map[string]interface{}{
-		"ref1": resultMsg.Ref1,
-		"ref2": resultMsg.Ref2,
-		"ref3": resultMsg.Ref3,
-		"type": resultMsg.Type,
-		"data": attachmentData,
+		"messageRef": resultMsg.Ref2,
+		"ref1":       resultMsg.Ref1,
+		"ref2":       resultMsg.Ref2,
+		"ref3":       resultMsg.Ref3,
+		"type":       resultMsg.Type,
+		"data":       attachmentData,
 	})
 	if err != nil {
 		log.Printf("ReplyMessage Error: failed on send callback to webhook: %v", err)
