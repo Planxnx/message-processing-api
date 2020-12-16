@@ -57,9 +57,13 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 
 	messageRef := watermill.NewUUID()
 
-	dataByte, _ := json.Marshal(reqBody.Data)
+	dataByte, err := json.Marshal(reqBody.Data)
+	if err != nil {
+		log.Printf("MainEndpoint Error: failed on marshal req data: %v", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error or request.data is invalid format")
+	}
 
-	err := m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessage{
+	err = m.MessageUsecase.EmitCommon(messageRef, &messageschema.DefaultMessage{
 		Message:     reqBody.Message,
 		Ref1:        providerID,
 		Ref2:        messageRef,
