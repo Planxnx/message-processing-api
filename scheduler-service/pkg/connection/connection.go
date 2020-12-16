@@ -15,6 +15,7 @@ type Connections struct {
 	MongoDBClient               *qmgo.Client
 	MessageProcssingAPIDatabase *qmgo.Database
 	KafkaPublisher              *kafka.Publisher
+	KafkaSubscriber             *kafka.Subscriber
 }
 
 func InitializeConnection() *Connections {
@@ -31,9 +32,15 @@ func InitializeConnection() *Connections {
 		panic(fmt.Errorf("InitializeConnection Error: failed on create kafka connection: %v", err.Error()))
 	}
 
+	kafkaSubscriber, err := kafaPkg.NewSubscriber()
+	if err != nil {
+		panic(fmt.Errorf("InitializeConnection Error: failed on create kafka subscriber connection: %v", err.Error()))
+	}
+
 	return &Connections{
 		MongoDBClient:               mongodbclient,
 		MessageProcssingAPIDatabase: mongodbclient.Database("message-processing-api"),
 		KafkaPublisher:              kafkaPublisher,
+		KafkaSubscriber:             kafkaSubscriber,
 	}
 }
