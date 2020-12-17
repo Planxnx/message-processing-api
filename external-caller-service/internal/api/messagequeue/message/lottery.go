@@ -85,8 +85,6 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 		log.Printf("CheckLatestLotteryHandler Error: failed on get latest lotto: %v", err)
 		return err
 	}
-	fmt.Println(requestData.Number)
-	fmt.Println(latestLotto.Prizes[0].Number)
 
 	foundReward := []*CheckLatestLotteryData{}
 
@@ -100,6 +98,9 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 			go func(p lottery.LatestLotteryPrizes) {
 				defer prizeWg.Done()
 				i := sort.SearchStrings(p.Number, requestData.Number)
+				if len(p.Number) == i {
+					return
+				}
 				if p.Number[i] == requestData.Number {
 					foundReward = append(foundReward, &CheckLatestLotteryData{
 						Name:   p.Name,
@@ -119,6 +120,9 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 			go func(p lottery.LatestLotteryRunningNumbers) {
 				defer runningNumberWg.Done()
 				i := sort.SearchStrings(p.Number, requestData.Number)
+				if len(p.Number) == i {
+					return
+				}
 				if p.Number[i] == requestData.Number {
 					foundReward = append(foundReward, &CheckLatestLotteryData{
 						Name:   p.Name,
@@ -132,7 +136,6 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 	}()
 	wg.Wait()
 
-	fmt.Println(foundReward)
 	attachmentData, err := json.Marshal(&CheckLatestLotteryAttachment{
 		Date:        latestLotto.Date,
 		FoundReward: foundReward,
@@ -151,7 +154,6 @@ func (m *MessageHandler) CheckLatestLotteryHandler(msg *message.Message) error {
 	replymessage.PublishedAt = timestamppb.Now()
 	replymessage.PublishedAt = timestamppb.Now()
 
-	log.Printf("Replied !!%v\n", string(replymessage.Data))
 	err = m.messageUsecase.Emit(watermill.NewShortUUID(), resultMsg.CallbackTopic, replymessage)
 	if err != nil {
 		log.Printf("ChitchatHandler Error: failed on emit message: %v", err)
