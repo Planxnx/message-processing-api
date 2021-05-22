@@ -11,10 +11,12 @@ const ListsPage = () => {
   const [apisHealth, setAPIsHealth] = useState([]);
   useEffect(() => {
     (async () => {
-      const lists = await getAPIsHealth();
-      if (lists) {
-        setAPIsHealth(lists);
-      }
+      setInterval(async () => {
+        const lists = await getAPIsHealth();
+        if (lists) {
+          setAPIsHealth(lists);
+        }
+      }, 3000);
     })();
   }, []);
 

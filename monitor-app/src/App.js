@@ -1,7 +1,6 @@
 import "bootstrap/dist/css/bootstrap.css";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ListsPage from "./pages/Lists/Lists";
-import InfoPage from "./pages/Info/Info";
 
 const App = () => {
   return (

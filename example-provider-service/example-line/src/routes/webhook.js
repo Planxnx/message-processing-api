@@ -41,7 +41,22 @@ router.post('/line', async (req, res, next) => {
           if (message == '/help') {
             lineClient.replyMessage(event.replyToken, {
               type: 'text',
-              text: 'HELP🚑\n- ฟีเจอร์ตอนนี้ยังมีแค่คุยเล่นนะค้าบ',
+              text: 'HELP🚑\n- /lotto [lotto id] : ตรวจสอบผลรางวัลงวดล่าสุด\n',
+            });
+          } else if (message.startsWith('/lotto')) {
+            let userRef = event.source.userId;
+            let lottoID = message.slice(7);
+            mpaService.checkLottoReward(lottoID, userRef).then((data) => {
+              let result = '';
+              if (data.foundReward) {
+                result = `ยินดีด้วย หมายเลข ${data.foundReward[0].number} ได้รางวัล ${data.foundReward[0].name} เป็นเงินมูลค่า ${data.foundReward[0].reward} บาท`;
+              } else {
+                result = `เสียใจด้วย หมายเลข ${lottoID} ไม่ถูกรางวัล`;
+              }
+              lineClient.replyMessage(event.replyToken, {
+                type: 'text',
+                text: result,
+              });
             });
           } else {
             lineClient.replyMessage(event.replyToken, {
