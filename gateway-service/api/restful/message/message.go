@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	kafapkg "github.com/Planxnx/message-processing-api/gateway-service/pkg/kafka"
+	"github.com/Shopify/sarama"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -26,13 +27,15 @@ type MessageHandler struct {
 	MessageUsecase  *messageusecase.MessageUsecase
 	KafkaSubscriber *kafka.Subscriber
 	healthUsercase  *healthusecase.HealthUsercase
+	SaramaBroker    *sarama.Broker
 }
 
-func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber, hu *healthusecase.HealthUsercase) *MessageHandler {
+func New(m *messageusecase.MessageUsecase, sub *kafka.Subscriber, hu *healthusecase.HealthUsercase, sb *sarama.Broker) *MessageHandler {
 	return &MessageHandler{
 		MessageUsecase:  m,
 		KafkaSubscriber: sub,
 		healthUsercase:  hu,
+		SaramaBroker:    sb,
 	}
 }
 
@@ -42,7 +45,7 @@ func (m *MessageHandler) MainEndpoint(c *fiber.Ctx) error {
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
 
-	featureHealth := m.healthUsercase.GetHealthMem(reqBody.Feature)
+	featureHealth, _ := m.healthUsercase.GetHealth(c.Context(), reqBody.Feature)
 	if featureHealth == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
 			Message: "feature is unavailable",
@@ -101,7 +104,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 	reqBody := &model.MessageRequest{}
 	c.BodyParser(reqBody)
 
-	featureHealth := m.healthUsercase.GetHealthMem(reqBody.Feature)
+	featureHealth, _ := m.healthUsercase.GetHealth(c.Context(), reqBody.Feature)
 	if featureHealth == nil {
 		return c.Status(fiber.StatusBadRequest).JSON(&model.Response{
 			Message: "feature is unavailable",
@@ -137,6 +140,12 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 		log.Printf("SynchronousEndpoint Error: failed on emit message: %v", err)
 		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
+
+	if err := kafapkg.CreateTopic(callbackTopic, m.SaramaBroker); err != nil {
+		log.Printf("SynchronousEndpoint Error: failed on create kafka topic: %v\n", err)
+		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+	}
+	defer kafapkg.DeleteTopic([]string{callbackTopic}, m.SaramaBroker)
 
 	submessage, err := kafkaSubscriber.Subscribe(ctx, callbackTopic)
 	if err != nil {

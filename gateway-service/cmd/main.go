@@ -56,6 +56,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("main Error: failed on create kafka publisher: %v", err)
 	}
+	saramaBroker, err := kafapkg.NewSarama()
+	if err != nil {
+		log.Fatalf("main Error: failed on create sarama broker: %v", err)
+	}
 
 	//Initial MongoDB Dependency
 	mongodbClient, err := mongodbpkg.NewClient(ctx)
@@ -89,7 +93,7 @@ func main() {
 	//Initial Restful Dependency
 	middlewareHandler := middleware.New(providerUsecase)
 	healthHandler := health.New(healthUsecase)
-	messageHandler := message.New(messageUsecase, kafkaSubscriber, healthUsecase)
+	messageHandler := message.New(messageUsecase, kafkaSubscriber, healthUsecase, saramaBroker)
 	provderHandler := provider.New(providerUsecase)
 	routerDependency := &restful.RouterDependency{
 		HealthHandler:  healthHandler,

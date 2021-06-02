@@ -6,6 +6,7 @@ replace github.com/Planxnx/message-processing-api/message-schema => ../message-s
 
 require (
 	github.com/Planxnx/message-processing-api/message-schema v0.0.0-20200914043633-32f835e1f4da
+	github.com/Shopify/sarama v1.26.0
 	github.com/ThreeDotsLabs/watermill v1.1.1
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.0
 	github.com/gofiber/fiber/v2 v2.0.1
