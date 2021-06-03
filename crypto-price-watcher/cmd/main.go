@@ -50,7 +50,7 @@ func main() {
 }
 
 //CryptoGetPriceHandler message api handler for crypto get price
-func CryptoGetPriceHandler(coingeckoClient *coingecko.CoinGecko) func(replymessage, request *messageschema.DefaultMessage) error {
+func CryptoGetPriceHandler(coingeckoClient *coingecko.CoinGecko) messageapi.MessageAPIHandler {
 
 	type CryptoGetPriceReqData struct {
 		CoinSymbol string `json:"coin,omitempty"`
