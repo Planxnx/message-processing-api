@@ -1,7 +1,7 @@
-package message
+package messageapi
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"strings"
 
@@ -9,21 +9,49 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type MessageUsecase struct {
-	KafkaPublisher *kafka.Publisher
+type handler struct {
+	Topic   string
+	Handler func(response, request *messageschema.DefaultMessage) error
+	Config  *HandlerConfig
 }
 
-func NewUsecase(k *kafka.Publisher) *MessageUsecase {
-	return &MessageUsecase{
-		KafkaPublisher: k,
+type HandlerConfig struct {
+	FeatureName      string
+	ServiceName      string
+	Description      string
+	AsynchronousMode bool
+	SynchronousMode  bool
+}
+
+type MessageClient struct {
+	KafkaPublisher  *kafka.Publisher
+	KafkaSubscriber *kafka.Subscriber
+	handlers        []*handler
+}
+
+func New() (*MessageClient, error) {
+
+	kafkaSubscriber, err := NewSubscriber()
+	if err != nil {
+		return nil, errors.Errorf("main Error: failed on create kafka subscriber: %v", err)
 	}
+	kafkaNewPublisher, err := NewPubliser()
+	if err != nil {
+		return nil, errors.Errorf("main Error: failed on create kafka publisher: %v", err)
+	}
+
+	return &MessageClient{
+		KafkaPublisher:  kafkaNewPublisher,
+		KafkaSubscriber: kafkaSubscriber,
+	}, nil
 }
 
-func (m *MessageUsecase) EmitCommon(uuid string, msg *messageschema.DefaultMessage) error {
+func (m *MessageClient) EmitCommon(uuid string, msg *messageschema.DefaultMessage) error {
 	msgByte, err := proto.Marshal(msg)
 	if err != nil {
 		return err
@@ -37,7 +65,7 @@ func (m *MessageUsecase) EmitCommon(uuid string, msg *messageschema.DefaultMessa
 	return nil
 }
 
-func (m *MessageUsecase) EmitReply(uuid string, msg *messageschema.DefaultMessage) error {
+func (m *MessageClient) EmitReply(uuid string, msg *messageschema.DefaultMessage) error {
 	msgByte, err := proto.Marshal(msg)
 	if err != nil {
 		return err
@@ -51,7 +79,7 @@ func (m *MessageUsecase) EmitReply(uuid string, msg *messageschema.DefaultMessag
 	return nil
 }
 
-func (m *MessageUsecase) Emit(uuid string, topic string, msg *messageschema.DefaultMessage) error {
+func (m *MessageClient) Emit(uuid string, topic string, msg *messageschema.DefaultMessage) error {
 	msgByte, err := proto.Marshal(msg)
 	if err != nil {
 		return err
@@ -65,14 +93,7 @@ func (m *MessageUsecase) Emit(uuid string, topic string, msg *messageschema.Defa
 	return nil
 }
 
-type Config struct {
-	FeatureName      string
-	ServiceName      string
-	AsynchronousMode bool
-	SynchronousMode  bool
-}
-
-func (m *MessageUsecase) CreateMessageHandler(config *Config, handler func(response, request *messageschema.DefaultMessage) error) func(msg *message.Message) error {
+func (m *MessageClient) CreateMessageHandler(config *HandlerConfig, handler func(response, request *messageschema.DefaultMessage) error) func(msg *message.Message) error {
 
 	return func(msg *message.Message) error {
 		defer msg.Ack()
@@ -125,4 +146,36 @@ func (m *MessageUsecase) CreateMessageHandler(config *Config, handler func(respo
 		return handler(replymessage, requestmessage)
 	}
 
+}
+
+func (m *MessageClient) AddHandler(topic string, config *HandlerConfig, fn func(response, request *messageschema.DefaultMessage) error) {
+	m.handlers = append(m.handlers, &handler{
+		Topic:   topic,
+		Handler: fn,
+		Config:  config,
+	})
+}
+
+//Run start subscriber
+func (m *MessageClient) Run(ctx context.Context) error {
+	for _, v := range m.handlers {
+		messages, err := m.KafkaSubscriber.Subscribe(ctx, v.Topic)
+		if err != nil {
+			return errors.Errorf("Error: failed on subscribe topic: %v", err)
+		}
+
+		go func(h *handler) {
+			for msg := range messages {
+				//TODO: Handle Errors
+				m.CreateMessageHandler(h.Config, h.Handler)(msg)
+			}
+		}(v)
+
+		go m.healthCheck(v)
+	}
+
+	select {
+	case <-ctx.Done():
+		return errors.Errorf("ctx cancelled")
+	}
 }

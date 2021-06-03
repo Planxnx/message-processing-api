@@ -1,4 +1,4 @@
-package kafka
+package messageapi
 
 import (
 	"github.com/ThreeDotsLabs/watermill"
