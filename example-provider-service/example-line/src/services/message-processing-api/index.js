@@ -54,4 +54,28 @@ export default {
       console.log(error);
     }
   },
+  checkCryptoPrice: async function (userRef, coinSymmol, isAsync) {
+    const options = {
+      method: 'POST',
+      url: `${messageProcessingAPI}${isAsync ? "" : "/sync"}`,
+      headers: {
+        Authorization: authToken,
+        'Provider-ID': providerID,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        userRef: userRef,
+        feature: 'crypto-get-price',
+        data: {
+          coin: coinSymmol,
+        },
+      },
+    };
+    try {
+      const resp = await axios(options);
+      return resp.data;
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
