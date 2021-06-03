@@ -143,7 +143,7 @@ func (m *MessageHandler) SynchronousEndpoint(c *fiber.Ctx) error {
 
 	if err := kafapkg.CreateTopic(callbackTopic, m.SaramaBroker); err != nil {
 		log.Printf("SynchronousEndpoint Error: failed on create kafka topic: %v\n", err)
-		return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
+		// return fiber.NewError(fiber.StatusInternalServerError, "Internal Server Error")
 	}
 	defer kafapkg.DeleteTopic([]string{callbackTopic}, m.SaramaBroker)
 
