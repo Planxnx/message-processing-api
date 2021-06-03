@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful"
 	"github.com/Planxnx/message-processing-api/gateway-service/api/restful/health"
@@ -55,6 +56,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("main Error: failed on create kafka publisher: %v", err)
 	}
+	saramaBroker, err := kafapkg.NewSarama()
+	if err != nil {
+		log.Fatalf("main Error: failed on create sarama broker: %v", err)
+	}
 
 	//Initial MongoDB Dependency
 	mongodbClient, err := mongodbpkg.NewClient(ctx)
@@ -88,7 +93,7 @@ func main() {
 	//Initial Restful Dependency
 	middlewareHandler := middleware.New(providerUsecase)
 	healthHandler := health.New(healthUsecase)
-	messageHandler := message.New(messageUsecase, kafkaSubscriber)
+	messageHandler := message.New(messageUsecase, kafkaSubscriber, healthUsecase, saramaBroker)
 	provderHandler := provider.New(providerUsecase)
 	routerDependency := &restful.RouterDependency{
 		HealthHandler:  healthHandler,
@@ -114,13 +119,40 @@ func main() {
 	}()
 
 	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-	select {
-	case <-interrupt:
-		break
-	case <-ctx.Done():
-		break
+
+	signal.Notify(
+		interrupt,
+		syscall.SIGHUP,  // kill -SIGHUP XXXX
+		syscall.SIGINT,  // kill -SIGINT XXXX or Ctrl+c
+		syscall.SIGQUIT, // kill -SIGQUIT XXXX
+		syscall.SIGTERM, // kill -SIGTERM XXXX
+	)
+
+	<-interrupt
+	gracefullShutdownCtx, cancelShutdown := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelShutdown()
+	if err := kafkaSubscriber.Close(); err != nil {
+		log.Printf("Shutdown kafka subscriber error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown kafka subscriber success")
 	}
+	if err := kafkaNewPublisher.Close(); err != nil {
+		log.Printf("Shutdown kafka publisher error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown kafka publisher success")
+	}
+
+	if err := messagequeueRouter.Close(); err != nil {
+		log.Printf("Shutdown message queue router error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown message queue router success")
+	}
+	if err := mongodbClient.Close(gracefullShutdownCtx); err != nil {
+		log.Printf("Shutdown mongodb client error: %+v\n", err)
+	} else {
+		log.Println("Gracefully shutdown mongodb client success")
+	}
+	log.Println("Gracefully stopped server")
 }
 
 func defaultErrorHandler(c *fiber.Ctx, err error) error {

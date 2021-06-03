@@ -1,17 +1,21 @@
-package constant
+package scheduleconstant
+
+type ScheduleType string
 
 const (
-	ScheduleType_HOURLY string = "HOURLY"
-	ScheduleType_DAILY  string = "DAILY"
-	ScheduleType_WEEKLY string = "WEEKLY"
+	ScheduleType_HOURLY ScheduleType = "HOURLY"
+	ScheduleType_DAILY  ScheduleType = "DAILY"
+	ScheduleType_WEEKLY ScheduleType = "WEEKLY"
 )
 
+type WeekDay string
+
 const (
-	WeekDay_SUNDAY    string = "Sunday"
-	WeekDay_MONDAY    string = "Monday"
-	WeekDay_TUESDAY   string = "Tuesday"
-	WeekDay_WEDNESDAY string = "Wednesday"
-	WeekDay_THURSDAY  string = "Thursday"
-	WeekDay_FRIDAY    string = "Friday"
-	WeekDay_SATURDAY  string = "Saturday"
+	WeekDay_SUNDAY    WeekDay = "Sunday"
+	WeekDay_MONDAY    WeekDay = "Monday"
+	WeekDay_TUESDAY   WeekDay = "Tuesday"
+	WeekDay_WEDNESDAY WeekDay = "Wednesday"
+	WeekDay_THURSDAY  WeekDay = "Thursday"
+	WeekDay_FRIDAY    WeekDay = "Friday"
+	WeekDay_SATURDAY  WeekDay = "Saturday"
 )

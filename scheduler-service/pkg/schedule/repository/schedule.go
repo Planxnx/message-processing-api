@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
+	"log"
 	"time"
 
-	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/constant"
+	scheduleconstant "github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/constant"
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/model"
 	"github.com/pkg/errors"
 	"github.com/qiniu/qmgo"
@@ -27,7 +28,7 @@ func (schRepo *ScheduleRepository) GetDailySchedule(ctx context.Context) (*[]mod
 	hh, mm, _ := tNow.Clock()
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type":        constant.ScheduleType_DAILY,
+		"type":        scheduleconstant.ScheduleType_DAILY,
 		"time.hour":   hh,
 		"time.minute": mm,
 	}).All(workSchedule)
@@ -41,8 +42,9 @@ func (schRepo *ScheduleRepository) GetWeeklySchedule(ctx context.Context) (*[]mo
 	tNow := time.Now()
 	hh, mm, _ := tNow.Clock()
 	workSchedule := &[]model.WorkSchedule{}
+	log.Printf("%v %v: %v:%v", scheduleconstant.ScheduleType_WEEKLY, tNow.Weekday().String(), hh, mm)
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type":         constant.ScheduleType_WEEKLY,
+		"type":         scheduleconstant.ScheduleType_WEEKLY,
 		"time.weekDay": tNow.Weekday().String(),
 		"time.hour":    hh,
 		"time.minute":  mm,
@@ -58,7 +60,7 @@ func (schRepo *ScheduleRepository) GetHOURLYSchedule(ctx context.Context) (*[]mo
 	_, mm, _ := tNow.Clock()
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type":        constant.ScheduleType_HOURLY,
+		"type":        scheduleconstant.ScheduleType_HOURLY,
 		"time.minute": mm,
 	}).All(workSchedule)
 	if err != nil {
@@ -79,7 +81,7 @@ func (schRepo *ScheduleRepository) GetAllSchedule(ctx context.Context) (*[]model
 func (schRepo *ScheduleRepository) GetAllDailySchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type": constant.ScheduleType_DAILY,
+		"type": scheduleconstant.ScheduleType_DAILY,
 	}).All(workSchedule)
 	if err != nil {
 		return nil, err
@@ -90,7 +92,7 @@ func (schRepo *ScheduleRepository) GetAllDailySchedule(ctx context.Context) (*[]
 func (schRepo *ScheduleRepository) GetAllHOURLYSchedule(ctx context.Context) (*[]model.WorkSchedule, error) {
 	workSchedule := &[]model.WorkSchedule{}
 	err := schRepo.WorkScheduleCollection.Find(ctx, bson.M{
-		"type": constant.ScheduleType_HOURLY,
+		"type": scheduleconstant.ScheduleType_HOURLY,
 	}).All(workSchedule)
 	if err != nil {
 		return nil, err
@@ -99,12 +101,20 @@ func (schRepo *ScheduleRepository) GetAllHOURLYSchedule(ctx context.Context) (*[
 }
 
 func (schRepo *ScheduleRepository) InsertiDailySchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
-	workSchedule.Type = constant.ScheduleType_DAILY
+	workSchedule.Type = scheduleconstant.ScheduleType_DAILY
+	if workSchedule.Data == nil {
+		workSchedule.Data = map[string]interface{}{}
+	}
+	workSchedule.CreateAt = time.Now()
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }
 
 func (schRepo *ScheduleRepository) InsertHOURLYSchedule(ctx context.Context, workSchedule model.WorkSchedule) (*qmgo.InsertOneResult, error) {
-	workSchedule.Type = constant.ScheduleType_HOURLY
+	workSchedule.Type = scheduleconstant.ScheduleType_HOURLY
+	if workSchedule.Data == nil {
+		workSchedule.Data = map[string]interface{}{}
+	}
+	workSchedule.CreateAt = time.Now()
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }
 
@@ -112,7 +122,14 @@ func (schRepo *ScheduleRepository) InsertWeeklySchedule(ctx context.Context, wor
 	if workSchedule.Time.WeekDay == "" {
 		return nil, errors.Errorf("WeekDay is invalid")
 	}
-	workSchedule.Type = constant.ScheduleType_WEEKLY
+	workSchedule.Type = scheduleconstant.ScheduleType_WEEKLY
+	if workSchedule.Data == nil {
+		workSchedule.Data = map[string]interface{}{}
+	}
+	if workSchedule.Data == nil {
+		workSchedule.Data = map[string]interface{}{}
+	}
+	workSchedule.CreateAt = time.Now()
 	return schRepo.WorkScheduleCollection.InsertOne(ctx, workSchedule)
 }
 

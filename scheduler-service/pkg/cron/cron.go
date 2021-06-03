@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"time"
 
-	kafaPkg "github.com/Planxnx/message-processing-api/scheduler-service/pkg/connection/kafka"
+	messageschema "github.com/Planxnx/message-processing-api/message-schema"
+	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/model"
 	"github.com/Planxnx/message-processing-api/scheduler-service/pkg/schedule/repository"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/robfig/cron/v3"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type CronCommand struct {
@@ -48,12 +50,14 @@ func NewScheduleUsecase(schRepo *repository.ScheduleRepository, kafkaPubliser *k
 	}
 }
 
-func (sch *CronUsecase) StartFetchSchedule() {
+func (sch *CronUsecase) StartFetchSchedule() *cron.Cron {
 	for _, cronCmd := range sch.CronCommands {
 		sch.Cron.AddFunc(cronCmd.TimeSpec, cronCmd.CommandFunction)
 	}
 	sch.Cron.Start()
 	log.Println("Start Fetch schedule")
+
+	return sch.Cron
 }
 
 func dailyWorkCommand(schR *repository.ScheduleRepository, kafkaPubliser *kafka.Publisher) func() {
@@ -72,31 +76,37 @@ func dailyWorkCommand(schR *repository.ScheduleRepository, kafkaPubliser *kafka.
 		}
 		log.Printf("Daily Found! %v", workSch)
 		for _, work := range *workSch {
-			work.Data["ScheduleType"] = work.Type
-			work.Data["ScheduleTime"] = work.Time
-			kafkaMessage := &kafaPkg.DefaultMessageFormat{
-				Ref1:        work.Ref1,
-				Ref2:        work.Ref2,
-				Ref3:        work.Ref3,
-				Message:     work.Message,
-				Owner:       work.Owner,
-				PublishedBy: "scheduler-service",
-				PublishedAt: time.Now(),
-				Features:    work.Features,
-				Data:        work.Data,
-				Type:        "notification",
-			}
-			msgJSON, err := json.Marshal(kafkaMessage)
-			if err != nil {
-				log.Printf("dailyWorkCommand Error: failed on create json message of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
-				return
-			}
-			kafkaMsg := message.NewMessage(watermill.NewUUID(), msgJSON)
-			for _, callbackTopic := range work.CallbackTopic {
-				if err := kafkaPubliser.Publish(callbackTopic, kafkaMsg); err != nil {
+			go func(work model.WorkSchedule) {
+				work.Data["scheduleType"] = work.Type
+				work.Data["scheduleTime"] = work.Time
+				workData, err := json.Marshal(work.Data)
+				if err != nil {
+					log.Printf("dailyWorkCommand Error: failed on json work data marshal of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
+					return
+				}
+				kafkaMessage := &messageschema.DefaultMessage{
+					Ref1:        work.Ref1,
+					Ref2:        work.Ref2,
+					Ref3:        work.Ref3,
+					Message:     work.Message,
+					Owner:       work.Owner,
+					PublishedBy: "Scheduler-service",
+					PublishedAt: timestamppb.Now(),
+					Feature:     work.Feature,
+					Data:        workData,
+					Type:        "notification",
+				}
+				msgByte, err := proto.Marshal(kafkaMessage)
+				if err != nil {
+					log.Printf("dailyWorkCommand Error: failed on create proto message of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
+					return
+				}
+				kafkaMsg := message.NewMessage(watermill.NewUUID(), msgByte)
+
+				if err := kafkaPubliser.Publish(work.CallbackTopic, kafkaMsg); err != nil {
 					log.Println("dailyWorkCommand Error: failed on publish message: " + err.Error())
 				}
-			}
+			}(work)
 		}
 	}
 }
@@ -117,30 +127,33 @@ func hourlyWorkCommand(schR *repository.ScheduleRepository, kafkaPubliser *kafka
 		}
 		log.Printf("Hourly Found! %v", workSch)
 		for _, work := range *workSch {
-			work.Data["ScheduleType"] = work.Type
-			work.Data["ScheduleTime"] = work.Time
-			kafkaMessage := &kafaPkg.DefaultMessageFormat{
+			work.Data["scheduleType"] = work.Type
+			work.Data["scheduleTime"] = work.Time
+			workData, err := json.Marshal(work.Data)
+			if err != nil {
+				log.Printf("hourlyWorkCommand Error: failed on json work data marshal of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
+				return
+			}
+			kafkaMessage := &messageschema.DefaultMessage{
 				Ref1:        work.Ref1,
 				Ref2:        work.Ref2,
 				Ref3:        work.Ref3,
 				Message:     work.Message,
 				Owner:       work.Owner,
-				PublishedBy: "scheduler-service",
-				PublishedAt: time.Now(),
-				Features:    work.Features,
-				Data:        work.Data,
+				PublishedBy: "Scheduler-service",
+				PublishedAt: timestamppb.Now(),
+				Feature:     work.Feature,
+				Data:        workData,
 				Type:        "notification",
 			}
-			msgJSON, err := json.Marshal(kafkaMessage)
+			msgByte, err := proto.Marshal(kafkaMessage)
 			if err != nil {
 				log.Printf("hourlyWorkCommand Error: failed on create json message of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
 				return
 			}
-			kafkaMsg := message.NewMessage(watermill.NewUUID(), msgJSON)
-			for _, callbackTopic := range work.CallbackTopic {
-				if err := kafkaPubliser.Publish(callbackTopic, kafkaMsg); err != nil {
-					log.Println("hourlyWorkCommand Error: failed on publish message: " + err.Error())
-				}
+			kafkaMsg := message.NewMessage(watermill.NewUUID(), msgByte)
+			if err := kafkaPubliser.Publish(work.CallbackTopic, kafkaMsg); err != nil {
+				log.Println("hourlyWorkCommand Error: failed on publish message: " + err.Error())
 			}
 		}
 	}
@@ -162,30 +175,33 @@ func weeklyWorkCommand(schR *repository.ScheduleRepository, kafkaPubliser *kafka
 		}
 		log.Printf("Weekly Found: %v", workSch)
 		for _, work := range *workSch {
-			work.Data["ScheduleType"] = work.Type
-			work.Data["ScheduleTime"] = work.Time
-			kafkaMessage := &kafaPkg.DefaultMessageFormat{
+			work.Data["scheduleType"] = work.Type
+			work.Data["scheduleTime"] = work.Time
+			workData, err := json.Marshal(work.Data)
+			if err != nil {
+				log.Printf("weeklyWorkCommand Error: failed on json work data marshal of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
+				return
+			}
+			kafkaMessage := &messageschema.DefaultMessage{
 				Ref1:        work.Ref1,
 				Ref2:        work.Ref2,
 				Ref3:        work.Ref3,
 				Message:     work.Message,
 				Owner:       work.Owner,
-				PublishedBy: "scheduler-service",
-				PublishedAt: time.Now(),
-				Features:    work.Features,
-				Data:        work.Data,
+				PublishedBy: "Scheduler-service",
+				PublishedAt: timestamppb.Now(),
+				Feature:     work.Feature,
+				Data:        workData,
 				Type:        "notification",
 			}
-			msgJSON, err := json.Marshal(kafkaMessage)
+			msgByte, err := proto.Marshal(kafkaMessage)
 			if err != nil {
 				log.Printf("weeklyWorkCommand Error: failed on create json message of ref2(%v)and owner(%v): %v ,", work.Ref2, work.Owner, err.Error())
 				return
 			}
-			kafkaMsg := message.NewMessage(watermill.NewUUID(), msgJSON)
-			for _, callbackTopic := range work.CallbackTopic {
-				if err := kafkaPubliser.Publish(callbackTopic, kafkaMsg); err != nil {
-					log.Println("weeklyWorkCommand Error: failed on publish message: " + err.Error())
-				}
+			kafkaMsg := message.NewMessage(watermill.NewUUID(), msgByte)
+			if err := kafkaPubliser.Publish(work.CallbackTopic, kafkaMsg); err != nil {
+				log.Println("weeklyWorkCommand Error: failed on publish message: " + err.Error())
 			}
 		}
 	}

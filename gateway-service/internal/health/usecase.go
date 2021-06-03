@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+var healthDataCaches = make(map[string]*HealthData)
+
 type HealthUsercase struct {
 	healthCollection    *qmgo.Collection
 	healthLogCollection *qmgo.Collection
@@ -19,6 +21,18 @@ func New(mc *qmgo.Collection, hlmc *qmgo.Collection) *HealthUsercase {
 		healthCollection:    mc,
 		healthLogCollection: hlmc,
 	}
+}
+
+func (pU *HealthUsercase) GetHealth(ctx context.Context, feature string) (*HealthData, error) {
+	healthData := &HealthData{}
+	err := pU.healthCollection.Find(ctx, bson.M{
+		"feature": feature,
+	}).One(healthData)
+	if err != nil {
+		return nil, err
+	}
+
+	return healthData, nil
 }
 
 func (pU *HealthUsercase) GetHealthByFeatureAndServiceName(ctx context.Context, feature string, serviceName string) (*HealthData, error) {
@@ -46,6 +60,10 @@ func (pU *HealthUsercase) GetAllHealths(ctx context.Context) ([]*HealthData, err
 	return *healthData, nil
 }
 
+func (*HealthUsercase) GetHealthMem(feature string) *HealthData {
+	return healthDataCaches[feature]
+}
+
 func (pU *HealthUsercase) UpsertHealthData(ctx context.Context, healthData *HealthData) error {
 	healthData.LastCheckedAt = time.Now()
 	_, err := pU.healthCollection.Upsert(ctx,
@@ -57,6 +75,9 @@ func (pU *HealthUsercase) UpsertHealthData(ctx context.Context, healthData *Heal
 		return err
 	}
 	go pU.createHealthDataLog(ctx, healthData)
+
+	//save mem
+	healthDataCaches[healthData.Feature] = healthData
 	return nil
 }
 

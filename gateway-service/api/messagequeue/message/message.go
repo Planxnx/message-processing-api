@@ -41,17 +41,27 @@ func (m *MessageHandler) ReplyMessage(msg *message.Message) error {
 		return nil
 	}
 
-	attachmentData := &map[string]interface{}{}
-	json.Unmarshal(resultMsg.Data, attachmentData)
+	replyMessage := map[string]interface{}{
+		"messageRef": resultMsg.Ref2,
+		"ref1":       resultMsg.Ref1,
+		"ref2":       resultMsg.Ref2,
+		"ref3":       resultMsg.Ref3,
+		"type":       resultMsg.Type,
+	}
+
+	if resultMsg.ErrorInternal != "" {
+		log.Printf("ReplyMessage Error: failed on result: %v", resultMsg.ErrorInternal)
+		replyMessage["error"] = "Internal Server Error"
+	} else if resultMsg.Error != "" {
+		replyMessage["error"] = resultMsg.Error
+	} else {
+		attachmentData := &map[string]interface{}{}
+		json.Unmarshal(resultMsg.Data, attachmentData)
+		replyMessage["data"] = attachmentData
+	}
 
 	time.Sleep(1 * time.Second) //Add deley
-	_, err = m.callbackUsecase.Request(provider.Webhook, map[string]interface{}{
-		"ref1": resultMsg.Ref1,
-		"ref2": resultMsg.Ref2,
-		"ref3": resultMsg.Ref3,
-		"type": resultMsg.Type,
-		"data": attachmentData,
-	})
+	_, err = m.callbackUsecase.Request(provider.Webhook, replyMessage)
 	if err != nil {
 		log.Printf("ReplyMessage Error: failed on send callback to webhook: %v", err)
 		return nil
