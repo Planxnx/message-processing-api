@@ -31,6 +31,7 @@ func main() {
 		log.Fatalf("main Error: failed on create coingecko client: %v\n", err)
 	}
 
+	//Define Feature Config
 	cryptoGetPriceConfig := &messageapi.HandlerConfig{
 		FeatureName:      FeatureCryptoGetPrice,
 		ServiceName:      ServiceName,
@@ -38,14 +39,17 @@ func main() {
 		SynchronousMode:  true,
 	}
 
+	//Add Feature Handler
 	messageClient.AddHandler(messageschema.CommonMessageTopic, cryptoGetPriceConfig, CryptoGetPriceHandler(coingeckoClient))
 
+	//Start service
 	log.Printf("%s: Start messagequeue subscriber ...\n", ServiceName)
 	if err := messageClient.Run(ctx); err != nil {
 		log.Fatalf("main Error: failed on start messagequeue subscruber: %v", err)
 	}
 }
 
+//CryptoGetPriceHandler message api handler for crypto get price
 func CryptoGetPriceHandler(coingeckoClient *coingecko.CoinGecko) func(replymessage, request *messageschema.DefaultMessage) error {
 
 	type CryptoGetPriceReqData struct {
