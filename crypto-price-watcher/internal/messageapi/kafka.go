@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	//TODO: get kafka host from config
 	kafkaHost string = "localhost:9092"
 	logger           = watermill.NewStdLogger(false, true)
 )
@@ -23,7 +24,6 @@ func NewSubscriber() (*kafka.Subscriber, error) {
 		Brokers:               []string{kafkaHost},
 		Unmarshaler:           kafka.DefaultMarshaler{},
 		OverwriteSaramaConfig: kafka.DefaultSaramaSubscriberConfig(),
-		// ConsumerGroup: "main",
 	}
 	return kafka.NewSubscriber(config, logger)
 }
